@@ -1,5 +1,7 @@
 # FM-1 MIDI Processor
 
+![FM-1 MIDI Monitor](html/img/screens/midi-monitor.png)
+
 Custom firmware that turns the **M-VAVE FM-1** into a stand-alone MIDI processor: monitor, filter, remap, re-channelize and trigger MIDI without a computer.
 
 - **[Help guide](https://midihax.github.io/fm1-midi-processor/html/)**: how every page and control works, with screen captures.
@@ -41,6 +43,12 @@ TRS / USB in → Channel Filter → Message Filter → Message Remap → Channel
   - The Clock Monitor shows the source, run state, BPM and elapsed time.
 - **Patches:** 16 named patches.
   - Every setting can be dumped and loaded over SysEx, for backup and editing on a computer.
+
+## MIDI Connections
+
+The [DoReMidi USB MIDI Host Box](https://www.doremidi.cn/h-pd-36.html) can be used to provide DIN MIDI in/out ports for the FM-1. With the USB Host Box, you have 2 inputs (1 DIN and 1 TRS) and 1 DIN output. The USB Host Box will also power the FM-1.
+
+![DoReMidi USB MIDI Host Box](html/img/doremidi-usb-host-sm.jpg)
 
 ## Repository
 
