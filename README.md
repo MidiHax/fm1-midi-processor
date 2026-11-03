@@ -21,10 +21,7 @@ Custom firmware that turns the **M-VAVE FM-1** into a stand-alone MIDI processor
 
 MIDI from **TRS MIDI IN** and **USB** passes through a pipeline and comes out of **USB MIDI OUT**:
 
-```
-TRS / USB in → Channel Filter → Message Filter → Message Remap → Channel Remap → USB MIDI out
-                                     └→ Event Triggers ───────────────────────────↗
-```
+![MIDI flow: TRS and USB inputs each pass their own Channel Filter and Message Filter, then join and pass Message Remap and Channel Remap to USB MIDI OUT. Event Triggers, and the knobs and Live Keys, send straight to the output.](html/img/midi-flow.svg)
 
 - **MIDI Monitor:** a scrolling list of the last 100 messages. Colours show what the pipeline did: passed, blocked, remapped or triggered.
   - **Search** with OP1–OP5 by port, channel, type and data ranges.
