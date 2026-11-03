@@ -1,4 +1,4 @@
-# fm1-midi-processor
+# FM-1 MIDI Processor
 
 Custom firmware that turns the **M-VAVE FM-1** into a stand-alone MIDI processor: monitor, filter, remap, re-channelize and trigger MIDI without a computer.
 
