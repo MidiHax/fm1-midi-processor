@@ -58,7 +58,7 @@
   <path class="flow" d="M850 127 H876" marker-end="url(#a)"/>
 
   <!-- Straight to the output -->
-  <path class="direct" d="M520 132 V246"/>
+  <path class="direct" d="M520 132 V242" marker-end="url(#p)"/>
   <rect class="side" x="455" y="246" width="130" height="56" rx="8"/><text class="t" x="520" y="270">Event</text><text class="s" x="520" y="289">Triggers</text>
   <path class="direct" d="M585 274 H925 V159" marker-end="url(#p)"/>
   <text class="note" x="755" y="266">trigger messages: not filtered or remapped</text>
