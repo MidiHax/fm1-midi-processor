@@ -1,0 +1,5726 @@
+{
+ "format": "fm1-screen-designer",
+ "version": 1,
+ "exported": "2026-11-01T16:23:41.545Z",
+ "display": {
+  "width": 240,
+  "height": 240,
+  "colorFormat": "RGB565",
+  "font": "FM1 5x7 (app/screen.c). Each character is 6*scale wide and 8*scale tall; the glyph starts floor(scale/2) px below the top. Lowercase is drawn as uppercase.",
+  "grid": {
+   "cellWidth": 12,
+   "cellHeight": 16,
+   "columns": 20,
+   "rows": 15,
+   "note": "Text at scale 2 fills exactly one cell per character."
+  }
+ },
+ "palette": {
+  "BLACK": "0x0000",
+  "WHITE": "0xEF5D",
+  "DIM": "0x738E",
+  "PANEL": "0x18E3",
+  "ACCENT": "0x07FF",
+  "GREEN": "0x07E0",
+  "AMBER": "0xFD20",
+  "RED": "0xF800",
+  "BLUE": "0x3C9F",
+  "TEAL": "0x4EAE",
+  "PURPLE": "0xAC9F",
+  "PINK": "0xED18",
+  "YELLOW": "0xFF06",
+  "ORANGE": "0xFBA5"
+ },
+ "screens": [
+  {
+   "id": "slk3ch6x",
+   "name": "Midi Monitor",
+   "notes": "Default screen at startup; HOME returns here.\nScrolling MIDI monitor, newest at the bottom. Buffer holds 100 events. The bottom row shown is selected (black on blue); scroll to select an older one. SRCH (amber, header columns 13-16) while any search is on.",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "HOME",
+     "action": "Go to this screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Scroll monitor history"
+    },
+    {
+     "control": "OCT-",
+     "action": "Scroll monitor history"
+    },
+    {
+     "control": "OCT+",
+     "action": "Scroll monitor history"
+    },
+    {
+     "control": "REC",
+     "action": "Clear monitor history"
+    },
+    {
+     "control": "C#5",
+     "action": "Message rule from the selected row: opens Add Message Rule prefilled (or the existing rule for that input). Lit for notes, CC, PC"
+    },
+    {
+     "control": "D#5",
+     "action": "Channel rule from the selected row: opens Add Channel Rule prefilled (or the existing rule). Lit for channel messages"
+    },
+    {
+     "control": "F#5",
+     "action": "Trigger from the selected row: adds a trigger (D1 = the value, D2 0-127, NON 1-127, Fire ENTER) and opens Edit Trigger. Lit for NON, NOF, CC, PC"
+    },
+    {
+     "control": "OP1-OP5 (short)",
+     "action": "Turn that search on/off (F#3, G#3, A#3, C#4, D#4); lit while on"
+    },
+    {
+     "control": "OP1-OP5 (hold)",
+     "action": "Open that search screen (800 ms): Port, Channel, Type, D1, D2"
+    },
+    {
+     "control": "F5",
+     "action": "Selected row (NON/NOF/PAT/CC/PC) to Build Message Rule IN; opens it (GLO returns)"
+    },
+    {
+     "control": "G5",
+     "action": "Selected row (NON/NOF/PAT/CC/PC) to Build Message Rule OUT; opens it (GLO returns)"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "e42mmoh4"
+    },
+    {
+     "type": "text",
+     "name": "Columns",
+     "x": 0,
+     "y": 16,
+     "scale": 2,
+     "text": "P CH TYP D1   D2",
+     "color": "0x07FF",
+     "bg": null,
+     "notes": "P=Input port: T=TRS, U=USB, B=BLE",
+     "id": "e1s4kzbv"
+    },
+    {
+     "type": "list",
+     "name": "Monitor",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "rows": 13,
+     "rowHeight": 16,
+     "maxChars": 20,
+     "color": "0xEF5D",
+     "bg": null,
+     "hlRow": 12,
+     "hlColor": "0x0000",
+     "hlBg": "0x3C9F",
+     "lines": [
+      "T 01 NON C4   100",
+      "B 01 NOF C4   0",
+      "T 10 NON D2   127",
+      "B 02 CC  7    64",
+      "T 02 CC  7    70",
+      "U 01 PB  64  0",
+      "T 03 PC  12",
+      "T 01 NON E4   90",
+      "U 01 NOF E4   0",
+      "U 16 CAT 45",
+      "U 01 NON G4   88",
+      "T -- STA",
+      "T -- TCK",
+      "T -- STP"
+     ],
+     "bind": "monitor.events",
+     "notes": "T=TRS, U=USB, B=BLE",
+     "id": "exiwglq1"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "MIDI monitor",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "e18auia0"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "evgq1ieh"
+    }
+   ],
+   "ascii": [
+    "MIDI MONITOR",
+    "P CH TYP D1   D2",
+    "T 01 NON C4   100",
+    "B 01 NOF C4   0",
+    "T 10 NON D2   127",
+    "B 02 CC  7    64",
+    "T 02 CC  7    70",
+    "U 01 PB  64  0",
+    "T 03 PC  12",
+    "T 01 NON E4   90",
+    "U 01 NOF E4   0",
+    "U 16 CAT 45",
+    "U 01 NON G4   88",
+    "T -- STA",
+    "T -- TCK"
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "swvwtpgk",
+   "name": "Search Port",
+   "notes": "Built. Sub-page of the MIDI Monitor: hold its OP key there (800 ms). View only: hides monitor rows, never MIDI. See design/monitor-search.md.",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "HOME",
+     "action": "Back to the MIDI Monitor"
+    },
+    {
+     "control": "OP1 (short)",
+     "action": "Search on/off"
+    },
+    {
+     "control": "OP1-OP5 (hold)",
+     "action": "Switch to that search screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Moves the focus through STATE and the fields"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Change the focused field (INC/EXC and ON/OFF flip, numbers step)"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/flip the focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/flip the focused field"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "ek00s4n4"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "SEARCH PORT  OP1",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "e6l67paa"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "ex1ejooc"
+    },
+    {
+     "type": "text",
+     "name": "state label",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "STATE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e102cv85"
+    },
+    {
+     "type": "text",
+     "name": "state",
+     "x": 72,
+     "y": 32,
+     "scale": 2,
+     "text": "ON ",
+     "color": "0x0000",
+     "bg": "0x3C9F",
+     "id": "ehxbjfhb"
+    },
+    {
+     "type": "text",
+     "name": "hint",
+     "x": 0,
+     "y": 224,
+     "scale": 2,
+     "text": "HOLD OP1-5 HOME:BACK",
+     "color": "0x738E",
+     "bg": null,
+     "id": "e3k9vz5j"
+    },
+    {
+     "type": "text",
+     "name": "TRS label",
+     "x": 0,
+     "y": 64,
+     "scale": 2,
+     "text": "TRS:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "elc4pemn"
+    },
+    {
+     "type": "text",
+     "name": "TRS",
+     "x": 60,
+     "y": 64,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eeh949ym"
+    },
+    {
+     "type": "text",
+     "name": "USB label",
+     "x": 0,
+     "y": 80,
+     "scale": 2,
+     "text": "USB:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "evj80sx2"
+    },
+    {
+     "type": "text",
+     "name": "USB",
+     "x": 60,
+     "y": 80,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e6yu5yrb"
+    },
+    {
+     "type": "text",
+     "name": "BLE label",
+     "x": 0,
+     "y": 96,
+     "scale": 2,
+     "text": "BLE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "efk5a5e9"
+    },
+    {
+     "type": "text",
+     "name": "BLE",
+     "x": 60,
+     "y": 96,
+     "scale": 2,
+     "text": "EXC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e7ou9hlk"
+    }
+   ],
+   "ascii": [
+    "SEARCH PORT  OP1",
+    "",
+    "STATE:ON",
+    "",
+    "TRS: INC",
+    "USB: INC",
+    "BLE: EXC",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "HOLD OP1-5 HOME:BACK"
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "s854vjrj",
+   "name": "Search Channel",
+   "notes": "Built. Sub-page of the MIDI Monitor: hold its OP key there (800 ms). View only: hides monitor rows, never MIDI. See design/monitor-search.md.",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "HOME",
+     "action": "Back to the MIDI Monitor"
+    },
+    {
+     "control": "OP2 (short)",
+     "action": "Search on/off"
+    },
+    {
+     "control": "OP1-OP5 (hold)",
+     "action": "Switch to that search screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Moves the focus through STATE and the fields"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Change the focused field (INC/EXC and ON/OFF flip, numbers step)"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/flip the focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/flip the focused field"
+    },
+    {
+     "control": "KEYS",
+     "action": "Lower 16 white keys toggle INC/EXC for channel 1-16; lit while INC"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "eel1xkc7"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "SEARCH CHANNEL  OP2",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "ep0kaw56"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "eyppk9e2"
+    },
+    {
+     "type": "text",
+     "name": "state label",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "STATE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e04dsdqs"
+    },
+    {
+     "type": "text",
+     "name": "state",
+     "x": 72,
+     "y": 32,
+     "scale": 2,
+     "text": "ON ",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ec0pkzev"
+    },
+    {
+     "type": "text",
+     "name": "hint",
+     "x": 0,
+     "y": 224,
+     "scale": 2,
+     "text": "HOLD OP1-5 HOME:BACK",
+     "color": "0x738E",
+     "bg": null,
+     "id": "ejj4dqi7"
+    },
+    {
+     "type": "text",
+     "name": "ch1 label",
+     "x": 0,
+     "y": 64,
+     "scale": 2,
+     "text": "01:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e4bnxjx1"
+    },
+    {
+     "type": "text",
+     "name": "ch1",
+     "x": 48,
+     "y": 64,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e54ti8ri"
+    },
+    {
+     "type": "text",
+     "name": "ch2 label",
+     "x": 0,
+     "y": 80,
+     "scale": 2,
+     "text": "02:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eayibqup"
+    },
+    {
+     "type": "text",
+     "name": "ch2",
+     "x": 48,
+     "y": 80,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e0qziijg"
+    },
+    {
+     "type": "text",
+     "name": "ch3 label",
+     "x": 0,
+     "y": 96,
+     "scale": 2,
+     "text": "03:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ezglb2je"
+    },
+    {
+     "type": "text",
+     "name": "ch3",
+     "x": 48,
+     "y": 96,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ehsit8uz"
+    },
+    {
+     "type": "text",
+     "name": "ch4 label",
+     "x": 0,
+     "y": 112,
+     "scale": 2,
+     "text": "04:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e5okllym"
+    },
+    {
+     "type": "text",
+     "name": "ch4",
+     "x": 48,
+     "y": 112,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e9c6day3"
+    },
+    {
+     "type": "text",
+     "name": "ch5 label",
+     "x": 0,
+     "y": 128,
+     "scale": 2,
+     "text": "05:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eezloquc"
+    },
+    {
+     "type": "text",
+     "name": "ch5",
+     "x": 48,
+     "y": 128,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "epyjts69"
+    },
+    {
+     "type": "text",
+     "name": "ch6 label",
+     "x": 0,
+     "y": 144,
+     "scale": 2,
+     "text": "06:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e5g8d6u7"
+    },
+    {
+     "type": "text",
+     "name": "ch6",
+     "x": 48,
+     "y": 144,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ets79meu"
+    },
+    {
+     "type": "text",
+     "name": "ch7 label",
+     "x": 0,
+     "y": 160,
+     "scale": 2,
+     "text": "07:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "emweu0ge"
+    },
+    {
+     "type": "text",
+     "name": "ch7",
+     "x": 48,
+     "y": 160,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ee26b247"
+    },
+    {
+     "type": "text",
+     "name": "ch8 label",
+     "x": 0,
+     "y": 176,
+     "scale": 2,
+     "text": "08:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e6yzeobd"
+    },
+    {
+     "type": "text",
+     "name": "ch8",
+     "x": 48,
+     "y": 176,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e1cprz13"
+    },
+    {
+     "type": "text",
+     "name": "ch9 label",
+     "x": 144,
+     "y": 64,
+     "scale": 2,
+     "text": "09:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "epzyu5of"
+    },
+    {
+     "type": "text",
+     "name": "ch9",
+     "x": 192,
+     "y": 64,
+     "scale": 2,
+     "text": "EXC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ec4l5xn2"
+    },
+    {
+     "type": "text",
+     "name": "ch10 label",
+     "x": 144,
+     "y": 80,
+     "scale": 2,
+     "text": "10:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eqp45yty"
+    },
+    {
+     "type": "text",
+     "name": "ch10",
+     "x": 192,
+     "y": 80,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e7akumtz"
+    },
+    {
+     "type": "text",
+     "name": "ch11 label",
+     "x": 144,
+     "y": 96,
+     "scale": 2,
+     "text": "11:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ejf9lf7t"
+    },
+    {
+     "type": "text",
+     "name": "ch11",
+     "x": 192,
+     "y": 96,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ey3gk1nv"
+    },
+    {
+     "type": "text",
+     "name": "ch12 label",
+     "x": 144,
+     "y": 112,
+     "scale": 2,
+     "text": "12:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "exmqfbu6"
+    },
+    {
+     "type": "text",
+     "name": "ch12",
+     "x": 192,
+     "y": 112,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eqj6mpry"
+    },
+    {
+     "type": "text",
+     "name": "ch13 label",
+     "x": 144,
+     "y": 128,
+     "scale": 2,
+     "text": "13:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ekz3z13r"
+    },
+    {
+     "type": "text",
+     "name": "ch13",
+     "x": 192,
+     "y": 128,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "elyrgmnc"
+    },
+    {
+     "type": "text",
+     "name": "ch14 label",
+     "x": 144,
+     "y": 144,
+     "scale": 2,
+     "text": "14:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ewxbe6cz"
+    },
+    {
+     "type": "text",
+     "name": "ch14",
+     "x": 192,
+     "y": 144,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e22pa8jg"
+    },
+    {
+     "type": "text",
+     "name": "ch15 label",
+     "x": 144,
+     "y": 160,
+     "scale": 2,
+     "text": "15:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "etm3xaxk"
+    },
+    {
+     "type": "text",
+     "name": "ch15",
+     "x": 192,
+     "y": 160,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ei17dtm0"
+    },
+    {
+     "type": "text",
+     "name": "ch16 label",
+     "x": 144,
+     "y": 176,
+     "scale": 2,
+     "text": "16:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ez9po3be"
+    },
+    {
+     "type": "text",
+     "name": "ch16",
+     "x": 192,
+     "y": 176,
+     "scale": 2,
+     "text": "EXC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ef1mjd57"
+    }
+   ],
+   "ascii": [
+    "SEARCH CHANNEL  OP2",
+    "",
+    "STATE:ON",
+    "",
+    "01: INC     09: EXC",
+    "02: INC     10: INC",
+    "03: INC     11: INC",
+    "04: INC     12: INC",
+    "05: INC     13: INC",
+    "06: INC     14: INC",
+    "07: INC     15: INC",
+    "08: INC     16: EXC",
+    "",
+    "",
+    "HOLD OP1-5 HOME:BACK"
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "s5qysdhs",
+   "name": "Search Type",
+   "notes": "Built. Sub-page of the MIDI Monitor: hold its OP key there (800 ms). View only: hides monitor rows, never MIDI. See design/monitor-search.md. Clock ticks are not listed (never shown). Note On velocity 0 counts as NOF.",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "HOME",
+     "action": "Back to the MIDI Monitor"
+    },
+    {
+     "control": "OP3 (short)",
+     "action": "Search on/off"
+    },
+    {
+     "control": "OP1-OP5 (hold)",
+     "action": "Switch to that search screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Moves the focus through STATE and the fields"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Change the focused field (INC/EXC and ON/OFF flip, numbers step)"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/flip the focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/flip the focused field"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "ewstaeel"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "SEARCH TYPE  OP3",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "e6gmxrwd"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "ekc5rzkc"
+    },
+    {
+     "type": "text",
+     "name": "state label",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "STATE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "egow8q0m"
+    },
+    {
+     "type": "text",
+     "name": "state",
+     "x": 72,
+     "y": 32,
+     "scale": 2,
+     "text": "OFF",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "em71fuon"
+    },
+    {
+     "type": "text",
+     "name": "hint",
+     "x": 0,
+     "y": 224,
+     "scale": 2,
+     "text": "HOLD OP1-5 HOME:BACK",
+     "color": "0x738E",
+     "bg": null,
+     "id": "e6cw8lbx"
+    },
+    {
+     "type": "text",
+     "name": "NON label",
+     "x": 0,
+     "y": 64,
+     "scale": 2,
+     "text": "NON:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e54k2brd"
+    },
+    {
+     "type": "text",
+     "name": "NON",
+     "x": 60,
+     "y": 64,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "en8htyn3"
+    },
+    {
+     "type": "text",
+     "name": "NOF label",
+     "x": 0,
+     "y": 80,
+     "scale": 2,
+     "text": "NOF:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "exawlqby"
+    },
+    {
+     "type": "text",
+     "name": "NOF",
+     "x": 60,
+     "y": 80,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ekl860no"
+    },
+    {
+     "type": "text",
+     "name": "PAT label",
+     "x": 0,
+     "y": 96,
+     "scale": 2,
+     "text": "PAT:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e69s2xfp"
+    },
+    {
+     "type": "text",
+     "name": "PAT",
+     "x": 60,
+     "y": 96,
+     "scale": 2,
+     "text": "EXC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ezlw8xib"
+    },
+    {
+     "type": "text",
+     "name": "CC label",
+     "x": 0,
+     "y": 112,
+     "scale": 2,
+     "text": " CC:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e1bngn87"
+    },
+    {
+     "type": "text",
+     "name": "CC",
+     "x": 60,
+     "y": 112,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ex6shkp1"
+    },
+    {
+     "type": "text",
+     "name": "PC label",
+     "x": 0,
+     "y": 128,
+     "scale": 2,
+     "text": " PC:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e35mnql1"
+    },
+    {
+     "type": "text",
+     "name": "PC",
+     "x": 60,
+     "y": 128,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eyo54qc8"
+    },
+    {
+     "type": "text",
+     "name": "CAT label",
+     "x": 0,
+     "y": 144,
+     "scale": 2,
+     "text": "CAT:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e3ncv2ti"
+    },
+    {
+     "type": "text",
+     "name": "CAT",
+     "x": 60,
+     "y": 144,
+     "scale": 2,
+     "text": "EXC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eokyjzca"
+    },
+    {
+     "type": "text",
+     "name": "PB label",
+     "x": 0,
+     "y": 160,
+     "scale": 2,
+     "text": " PB:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "es3m5o94"
+    },
+    {
+     "type": "text",
+     "name": "PB",
+     "x": 60,
+     "y": 160,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "edbxi5v3"
+    },
+    {
+     "type": "text",
+     "name": "SYX label",
+     "x": 144,
+     "y": 64,
+     "scale": 2,
+     "text": "SYX:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ewy2eqgx"
+    },
+    {
+     "type": "text",
+     "name": "SYX",
+     "x": 204,
+     "y": 64,
+     "scale": 2,
+     "text": "EXC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eq3hmvet"
+    },
+    {
+     "type": "text",
+     "name": "MTC label",
+     "x": 144,
+     "y": 80,
+     "scale": 2,
+     "text": "MTC:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "epijqgsn"
+    },
+    {
+     "type": "text",
+     "name": "MTC",
+     "x": 204,
+     "y": 80,
+     "scale": 2,
+     "text": "EXC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e6ni55nc"
+    },
+    {
+     "type": "text",
+     "name": "SPP label",
+     "x": 144,
+     "y": 96,
+     "scale": 2,
+     "text": "SPP:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ev7xamjs"
+    },
+    {
+     "type": "text",
+     "name": "SPP",
+     "x": 204,
+     "y": 96,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "edq0dh6b"
+    },
+    {
+     "type": "text",
+     "name": "SS label",
+     "x": 144,
+     "y": 112,
+     "scale": 2,
+     "text": " SS:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eo25689x"
+    },
+    {
+     "type": "text",
+     "name": "SS",
+     "x": 204,
+     "y": 112,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e1bxjwz2"
+    },
+    {
+     "type": "text",
+     "name": "TR label",
+     "x": 144,
+     "y": 128,
+     "scale": 2,
+     "text": " TR:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e36o2ob3"
+    },
+    {
+     "type": "text",
+     "name": "TR",
+     "x": 204,
+     "y": 128,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eofw5jka"
+    },
+    {
+     "type": "text",
+     "name": "STA label",
+     "x": 144,
+     "y": 144,
+     "scale": 2,
+     "text": "STA:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eruvtnd3"
+    },
+    {
+     "type": "text",
+     "name": "STA",
+     "x": 204,
+     "y": 144,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "elmjakjo"
+    },
+    {
+     "type": "text",
+     "name": "CON label",
+     "x": 144,
+     "y": 160,
+     "scale": 2,
+     "text": "CON:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e9hk8hzh"
+    },
+    {
+     "type": "text",
+     "name": "CON",
+     "x": 204,
+     "y": 160,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ehnn8bfp"
+    },
+    {
+     "type": "text",
+     "name": "STP label",
+     "x": 144,
+     "y": 176,
+     "scale": 2,
+     "text": "STP:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eogpn17a"
+    },
+    {
+     "type": "text",
+     "name": "STP",
+     "x": 204,
+     "y": 176,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eztuw0c5"
+    },
+    {
+     "type": "text",
+     "name": "RST label",
+     "x": 144,
+     "y": 192,
+     "scale": 2,
+     "text": "RST:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ecz4lcfq"
+    },
+    {
+     "type": "text",
+     "name": "RST",
+     "x": 204,
+     "y": 192,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e4q7ksvx"
+    }
+   ],
+   "ascii": [
+    "SEARCH TYPE  OP3",
+    "",
+    "STATE:OFF",
+    "",
+    "NON: INC    SYX: EXC",
+    "NOF: INC    MTC: EXC",
+    "PAT: EXC    SPP: INC",
+    " CC: INC     SS: INC",
+    " PC: INC     TR: INC",
+    "CAT: EXC    STA: INC",
+    " PB: INC    CON: INC",
+    "            STP: INC",
+    "            RST: INC",
+    "",
+    "HOLD OP1-5 HOME:BACK"
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "ss2s0z9h",
+   "name": "Search D1",
+   "notes": "Built. Sub-page of the MIDI Monitor: hold its OP key there (800 ms). View only: hides monitor rows, never MIDI. See design/monitor-search.md.",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "HOME",
+     "action": "Back to the MIDI Monitor"
+    },
+    {
+     "control": "OP4 (short)",
+     "action": "Search on/off"
+    },
+    {
+     "control": "OP1-OP5 (hold)",
+     "action": "Switch to that search screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Moves the focus through STATE and the fields"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Change the focused field (INC/EXC and ON/OFF flip, numbers step)"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/flip the focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/flip the focused field"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "ef5uijtt"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "SEARCH D1  OP4",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "eyhr2odx"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "e16g4n9x"
+    },
+    {
+     "type": "text",
+     "name": "state label",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "STATE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "emc5tv1l"
+    },
+    {
+     "type": "text",
+     "name": "state",
+     "x": 72,
+     "y": 32,
+     "scale": 2,
+     "text": "ON ",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eb16mkcn"
+    },
+    {
+     "type": "text",
+     "name": "hint",
+     "x": 0,
+     "y": 224,
+     "scale": 2,
+     "text": "HOLD OP1-5 HOME:BACK",
+     "color": "0x738E",
+     "bg": null,
+     "id": "enkvao2p"
+    },
+    {
+     "type": "text",
+     "name": "from label",
+     "x": 0,
+     "y": 64,
+     "scale": 2,
+     "text": "FROM:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ew7ymrlx"
+    },
+    {
+     "type": "text",
+     "name": "from",
+     "x": 60,
+     "y": 64,
+     "scale": 2,
+     "text": "060",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e4jvxjsf"
+    },
+    {
+     "type": "text",
+     "name": "to label",
+     "x": 120,
+     "y": 64,
+     "scale": 2,
+     "text": "TO:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "edptu9yk"
+    },
+    {
+     "type": "text",
+     "name": "to",
+     "x": 156,
+     "y": 64,
+     "scale": 2,
+     "text": "072",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ezbrrnoh"
+    },
+    {
+     "type": "text",
+     "name": "from note",
+     "x": 60,
+     "y": 80,
+     "scale": 2,
+     "text": "C4",
+     "color": "0x738E",
+     "bg": null,
+     "notes": "Note names (60 = C4)",
+     "id": "ebnym56n"
+    },
+    {
+     "type": "text",
+     "name": "to note",
+     "x": 156,
+     "y": 80,
+     "scale": 2,
+     "text": "C5",
+     "color": "0x738E",
+     "bg": null,
+     "id": "ek1ysi7y"
+    },
+    {
+     "type": "text",
+     "name": "mode label",
+     "x": 0,
+     "y": 112,
+     "scale": 2,
+     "text": "MODE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ediafk3h"
+    },
+    {
+     "type": "text",
+     "name": "mode",
+     "x": 60,
+     "y": 112,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "INC: show only values in FROM-TO. EXC: hide them. Messages without D1 count as outside.",
+     "id": "e4deuhl6"
+    }
+   ],
+   "ascii": [
+    "SEARCH D1  OP4",
+    "",
+    "STATE:ON",
+    "",
+    "FROM:060  TO:072",
+    "     C4      C5",
+    "",
+    "MODE:INC",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "HOLD OP1-5 HOME:BACK"
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "sltotejk",
+   "name": "Search D2",
+   "notes": "Built. Sub-page of the MIDI Monitor: hold its OP key there (800 ms). View only: hides monitor rows, never MIDI. See design/monitor-search.md.",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "HOME",
+     "action": "Back to the MIDI Monitor"
+    },
+    {
+     "control": "OP5 (short)",
+     "action": "Search on/off"
+    },
+    {
+     "control": "OP1-OP5 (hold)",
+     "action": "Switch to that search screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Moves the focus through STATE and the fields"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Change the focused field (INC/EXC and ON/OFF flip, numbers step)"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/flip the focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/flip the focused field"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "erwa0q3u"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "SEARCH D2  OP5",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "eqwi7wwn"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "ekfrkavc"
+    },
+    {
+     "type": "text",
+     "name": "state label",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "STATE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ekwn6bcb"
+    },
+    {
+     "type": "text",
+     "name": "state",
+     "x": 72,
+     "y": 32,
+     "scale": 2,
+     "text": "ON ",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "elu9oiuk"
+    },
+    {
+     "type": "text",
+     "name": "hint",
+     "x": 0,
+     "y": 224,
+     "scale": 2,
+     "text": "HOLD OP1-5 HOME:BACK",
+     "color": "0x738E",
+     "bg": null,
+     "id": "emglt0qu"
+    },
+    {
+     "type": "text",
+     "name": "from label",
+     "x": 0,
+     "y": 64,
+     "scale": 2,
+     "text": "FROM:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "enzyscpt"
+    },
+    {
+     "type": "text",
+     "name": "from",
+     "x": 60,
+     "y": 64,
+     "scale": 2,
+     "text": "100",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "euot1mf3"
+    },
+    {
+     "type": "text",
+     "name": "to label",
+     "x": 120,
+     "y": 64,
+     "scale": 2,
+     "text": "TO:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e3ll2dy5"
+    },
+    {
+     "type": "text",
+     "name": "to",
+     "x": 156,
+     "y": 64,
+     "scale": 2,
+     "text": "127",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ef95k9ha"
+    },
+    {
+     "type": "text",
+     "name": "mode label",
+     "x": 0,
+     "y": 112,
+     "scale": 2,
+     "text": "MODE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ebt7jae2"
+    },
+    {
+     "type": "text",
+     "name": "mode",
+     "x": 60,
+     "y": 112,
+     "scale": 2,
+     "text": "INC",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "INC: show only values in FROM-TO. EXC: hide them. Messages without D2 count as outside.",
+     "id": "ef0xz25q"
+    }
+   ],
+   "ascii": [
+    "SEARCH D2  OP5",
+    "",
+    "STATE:ON",
+    "",
+    "FROM:100  TO:127",
+    "",
+    "",
+    "MODE:INC",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "HOLD OP1-5 HOME:BACK"
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "sli5qv67",
+   "name": "Channel Filter",
+   "notes": "",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "FX",
+     "action": "Go to this screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Cycles through editable fields (in blue)"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Select value for focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/cycle value for focused field"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/cycle value for focused field"
+    },
+    {
+     "control": "KEYS",
+     "action": "Lower 16 white keys toggle NO/OK for corresponding MIDI channel"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "e33npj1l"
+    },
+    {
+     "type": "text",
+     "name": "in port label",
+     "x": 0,
+     "y": 16,
+     "scale": 2,
+     "text": "in Port:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e5hjxhyj"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "CHANNEL FILTER",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "ewnri1h5"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "e1dkf3jc"
+    },
+    {
+     "type": "text",
+     "name": "in port",
+     "x": 96,
+     "y": 16,
+     "scale": 2,
+     "text": "TRS",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "Cycle: TRS, USB, BLE",
+     "id": "e3jt1yhs"
+    },
+    {
+     "type": "text",
+     "name": "Text 4",
+     "x": 0,
+     "y": 48,
+     "scale": 2,
+     "text": "01:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e6ds0eo3"
+    },
+    {
+     "type": "text",
+     "name": "Text 5",
+     "x": 0,
+     "y": 64,
+     "scale": 2,
+     "text": "02:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e3lno5j3"
+    },
+    {
+     "type": "text",
+     "name": "Text 6",
+     "x": 0,
+     "y": 80,
+     "scale": 2,
+     "text": "03:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "es5twfgh"
+    },
+    {
+     "type": "text",
+     "name": "Text 7",
+     "x": 0,
+     "y": 96,
+     "scale": 2,
+     "text": "04:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "ej8o1fpp"
+    },
+    {
+     "type": "text",
+     "name": "Text 8",
+     "x": 0,
+     "y": 112,
+     "scale": 2,
+     "text": "05:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "ee6ud06j"
+    },
+    {
+     "type": "text",
+     "name": "Text 9",
+     "x": 0,
+     "y": 128,
+     "scale": 2,
+     "text": "06:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e7fcs1ct"
+    },
+    {
+     "type": "text",
+     "name": "Text 10",
+     "x": 0,
+     "y": 144,
+     "scale": 2,
+     "text": "07:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e9l6yyzt"
+    },
+    {
+     "type": "text",
+     "name": "Text 11",
+     "x": 0,
+     "y": 160,
+     "scale": 2,
+     "text": "08:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "edfdc2k5"
+    },
+    {
+     "type": "text",
+     "name": "Text 12",
+     "x": 48,
+     "y": 48,
+     "scale": 2,
+     "text": "OK",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e5eoxm4y"
+    },
+    {
+     "type": "text",
+     "name": "Text 13",
+     "x": 48,
+     "y": 64,
+     "scale": 2,
+     "text": "OK",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ecdhcbjt"
+    },
+    {
+     "type": "text",
+     "name": "Text 14",
+     "x": 48,
+     "y": 80,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eb2c0bta"
+    },
+    {
+     "type": "text",
+     "name": "Text 15",
+     "x": 48,
+     "y": 96,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "elvh7kot"
+    },
+    {
+     "type": "text",
+     "name": "Text 16",
+     "x": 48,
+     "y": 112,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eyuwzgmp"
+    },
+    {
+     "type": "text",
+     "name": "Text 17",
+     "x": 48,
+     "y": 128,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ey0j6eyi"
+    },
+    {
+     "type": "text",
+     "name": "Text 18",
+     "x": 48,
+     "y": 144,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ehsfgt3q"
+    },
+    {
+     "type": "text",
+     "name": "Text 19",
+     "x": 48,
+     "y": 160,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e55hl93i"
+    },
+    {
+     "type": "text",
+     "name": "Text 20",
+     "x": 144,
+     "y": 48,
+     "scale": 2,
+     "text": "09:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e05n0aie"
+    },
+    {
+     "type": "text",
+     "name": "Text 21",
+     "x": 144,
+     "y": 64,
+     "scale": 2,
+     "text": "10:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e9ogluv5"
+    },
+    {
+     "type": "text",
+     "name": "Text 22",
+     "x": 144,
+     "y": 80,
+     "scale": 2,
+     "text": "11:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "einbglo5"
+    },
+    {
+     "type": "text",
+     "name": "Text 23",
+     "x": 144,
+     "y": 96,
+     "scale": 2,
+     "text": "12:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "eqot7kwm"
+    },
+    {
+     "type": "text",
+     "name": "Text 24",
+     "x": 144,
+     "y": 112,
+     "scale": 2,
+     "text": "13:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "enkl5c0f"
+    },
+    {
+     "type": "text",
+     "name": "Text 25",
+     "x": 144,
+     "y": 128,
+     "scale": 2,
+     "text": "14:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "elz0mogo"
+    },
+    {
+     "type": "text",
+     "name": "Text 26",
+     "x": 144,
+     "y": 144,
+     "scale": 2,
+     "text": "15:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "epm1534v"
+    },
+    {
+     "type": "text",
+     "name": "Text 27",
+     "x": 144,
+     "y": 160,
+     "scale": 2,
+     "text": "16:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "ezdk6h36"
+    },
+    {
+     "type": "text",
+     "name": "Text 28",
+     "x": 192,
+     "y": 48,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "en11dokx"
+    },
+    {
+     "type": "text",
+     "name": "Text 29",
+     "x": 192,
+     "y": 64,
+     "scale": 2,
+     "text": "OK",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e14yb1wl"
+    },
+    {
+     "type": "text",
+     "name": "Text 30",
+     "x": 192,
+     "y": 80,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e4edyz61"
+    },
+    {
+     "type": "text",
+     "name": "Text 31",
+     "x": 192,
+     "y": 96,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e4wzrz9c"
+    },
+    {
+     "type": "text",
+     "name": "Text 32",
+     "x": 192,
+     "y": 112,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eskvdfdr"
+    },
+    {
+     "type": "text",
+     "name": "Text 33",
+     "x": 192,
+     "y": 128,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eyvxlguh"
+    },
+    {
+     "type": "text",
+     "name": "Text 34",
+     "x": 192,
+     "y": 144,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "emkwhyov"
+    },
+    {
+     "type": "text",
+     "name": "Text 35",
+     "x": 192,
+     "y": 160,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ezf6p9no"
+    }
+   ],
+   "ascii": [
+    "CHANNEL FILTER",
+    "IN PORT:TRS",
+    "",
+    "01: OK      09: NO",
+    "02: OK      10: OK",
+    "03: NO      11: NO",
+    "04: NO      12: NO",
+    "05: NO      13: NO",
+    "06: NO      14: NO",
+    "07: NO      15: NO",
+    "08: NO      16: NO",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "sahatwlk",
+   "name": "Message Filter",
+   "notes": "",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "FX",
+     "action": "Go to this screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Cycles through editable fields (in blue)"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Select value for focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/cycle value for focused field"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/cycle value for focused field"
+    },
+    {
+     "control": "KEYS",
+     "action": "Lower 16 white keys selects MIDI ch 1-16"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "evu9u9z0"
+    },
+    {
+     "type": "text",
+     "name": "midi in port label",
+     "x": 0,
+     "y": 16,
+     "scale": 2,
+     "text": "in Port:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "emk6fqfg"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "MESSAGE FILTER",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "ep89a2ot"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "ev1qyvms"
+    },
+    {
+     "type": "text",
+     "name": "midi input port",
+     "x": 96,
+     "y": 16,
+     "scale": 2,
+     "text": "TRS",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "Cycle: TRS, USB, BLE",
+     "id": "ex43kcpo"
+    },
+    {
+     "type": "text",
+     "name": "midi ch port label",
+     "x": 0,
+     "y": 144,
+     "scale": 2,
+     "text": "effective ch:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ewbfrp7k"
+    },
+    {
+     "type": "text",
+     "name": "midi channel",
+     "x": 156,
+     "y": 144,
+     "scale": 2,
+     "text": "03",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eq2io3ln"
+    },
+    {
+     "type": "text",
+     "name": "sysex message",
+     "x": 0,
+     "y": 48,
+     "scale": 2,
+     "text": "SYX:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "ekf6ql28"
+    },
+    {
+     "type": "text",
+     "name": "midi time code",
+     "x": 0,
+     "y": 64,
+     "scale": 2,
+     "text": "MTC:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e6p73es9"
+    },
+    {
+     "type": "text",
+     "name": "song position pointer message",
+     "x": 0,
+     "y": 80,
+     "scale": 2,
+     "text": "SPP:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "esis5crh"
+    },
+    {
+     "type": "text",
+     "name": "start message",
+     "x": 0,
+     "y": 96,
+     "scale": 2,
+     "text": "STA:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e1zskg82"
+    },
+    {
+     "type": "text",
+     "name": "continue message",
+     "x": 0,
+     "y": 112,
+     "scale": 2,
+     "text": "CON:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "ewk82i3h"
+    },
+    {
+     "type": "text",
+     "name": "Text 11",
+     "x": 60,
+     "y": 48,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ehv2mpck"
+    },
+    {
+     "type": "text",
+     "name": "Text 12",
+     "x": 60,
+     "y": 64,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eg1ig6rz"
+    },
+    {
+     "type": "text",
+     "name": "Text 13",
+     "x": 60,
+     "y": 80,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ejmvjbzy"
+    },
+    {
+     "type": "text",
+     "name": "Text 14",
+     "x": 60,
+     "y": 96,
+     "scale": 2,
+     "text": "OK",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "exenf56a"
+    },
+    {
+     "type": "text",
+     "name": "Text 15",
+     "x": 60,
+     "y": 112,
+     "scale": 2,
+     "text": "OK",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e24d2kmu"
+    },
+    {
+     "type": "text",
+     "name": "note on message",
+     "x": 0,
+     "y": 176,
+     "scale": 2,
+     "text": "NON:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e652vj0w"
+    },
+    {
+     "type": "text",
+     "name": "note off message",
+     "x": 0,
+     "y": 192,
+     "scale": 2,
+     "text": "NOF:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "euxjolk2"
+    },
+    {
+     "type": "text",
+     "name": "continuous controller message",
+     "x": 12,
+     "y": 208,
+     "scale": 2,
+     "text": "CC:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e9zluw52"
+    },
+    {
+     "type": "text",
+     "name": "program change message",
+     "x": 12,
+     "y": 224,
+     "scale": 2,
+     "text": "PC:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "exfs8j0c"
+    },
+    {
+     "type": "text",
+     "name": "song select message",
+     "x": 132,
+     "y": 48,
+     "scale": 2,
+     "text": "SS:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "eerxalni"
+    },
+    {
+     "type": "text",
+     "name": "tune request message",
+     "x": 132,
+     "y": 64,
+     "scale": 2,
+     "text": "TR:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "euhgsmyc"
+    },
+    {
+     "type": "text",
+     "name": "reset message",
+     "x": 120,
+     "y": 80,
+     "scale": 2,
+     "text": "RST:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "ebpjkes8"
+    },
+    {
+     "type": "text",
+     "name": "stop message",
+     "x": 120,
+     "y": 96,
+     "scale": 2,
+     "text": "STP:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "enbjpsr0"
+    },
+    {
+     "type": "text",
+     "name": "tick message",
+     "x": 120,
+     "y": 112,
+     "scale": 2,
+     "text": "TCK:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "ewx3hr16"
+    },
+    {
+     "type": "text",
+     "name": "Text 25",
+     "x": 60,
+     "y": 176,
+     "scale": 2,
+     "text": "OK",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eb0qd9mx"
+    },
+    {
+     "type": "text",
+     "name": "Text 26",
+     "x": 60,
+     "y": 192,
+     "scale": 2,
+     "text": "OK",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e4tmvbim"
+    },
+    {
+     "type": "text",
+     "name": "Text 27",
+     "x": 60,
+     "y": 208,
+     "scale": 2,
+     "text": "OK",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ek8zy0ia"
+    },
+    {
+     "type": "text",
+     "name": "Text 28",
+     "x": 60,
+     "y": 224,
+     "scale": 2,
+     "text": "OK",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eqpc3jhv"
+    },
+    {
+     "type": "text",
+     "name": "Text 29",
+     "x": 180,
+     "y": 48,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e438zof3"
+    },
+    {
+     "type": "text",
+     "name": "Text 30",
+     "x": 180,
+     "y": 64,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e08bd5ii"
+    },
+    {
+     "type": "text",
+     "name": "Text 31",
+     "x": 180,
+     "y": 80,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ep4b6rqc"
+    },
+    {
+     "type": "text",
+     "name": "Text 32",
+     "x": 180,
+     "y": 96,
+     "scale": 2,
+     "text": "OK",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eopgt55o"
+    },
+    {
+     "type": "text",
+     "name": "Text 33",
+     "x": 180,
+     "y": 112,
+     "scale": 2,
+     "text": "OK",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "esnbdlm0"
+    },
+    {
+     "type": "text",
+     "name": "poly aftertouch message",
+     "x": 120,
+     "y": 176,
+     "scale": 2,
+     "text": "PAT:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e138acpk"
+    },
+    {
+     "type": "text",
+     "name": "channel aftertouch message",
+     "x": 120,
+     "y": 192,
+     "scale": 2,
+     "text": "CAT:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "er0w8i7b"
+    },
+    {
+     "type": "text",
+     "name": "pitch bend message",
+     "x": 132,
+     "y": 208,
+     "scale": 2,
+     "text": "PB:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "eo8i6421"
+    },
+    {
+     "type": "text",
+     "name": "Text 37",
+     "x": 180,
+     "y": 176,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ewlv0a5w"
+    },
+    {
+     "type": "text",
+     "name": "Text 38",
+     "x": 180,
+     "y": 192,
+     "scale": 2,
+     "text": "NO",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eht1nztb"
+    },
+    {
+     "type": "text",
+     "name": "Text 39",
+     "x": 180,
+     "y": 208,
+     "scale": 2,
+     "text": "OK",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eidf1p79"
+    }
+   ],
+   "ascii": [
+    "MESSAGE FILTER",
+    "IN PORT:TRS",
+    "",
+    "SYX: NO    SS: NO",
+    "MTC: NO    TR: NO",
+    "SPP: NO   RST: NO",
+    "STA: OK   STP: OK",
+    "CON: OK   TCK: OK",
+    "",
+    "EFFECTIVE CH:03",
+    "",
+    "NON: OK   PAT: NO",
+    "NOF: OK   CAT: NO",
+    " CC: OK    PB: OK",
+    " PC: OK"
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "shz8afls",
+   "name": "Knobs Config",
+   "notes": "",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "EDIT",
+     "action": "Go to this screen (cycles Knobs Config -> Metronome)"
+    },
+    {
+     "control": "SELECT",
+     "action": "Cycles through editable fields (in blue)"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Select value for focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/cycle value for focused field"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/cycle value for focused field"
+    },
+    {
+     "control": "KEYS",
+     "action": "Lower 16 white keys selects MIDI ch 1-16 only when focused on a channel field"
+    },
+    {
+     "control": "ENV",
+     "action": "Puts the focused knob's CC into Build Message Rule IN (port USB) and opens it"
+    },
+    {
+     "control": "LFO",
+     "action": "Puts the focused knob's CC into Build Message Rule OUT and opens it"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "e1jvlt5i"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "Knobs Config",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "e373w0b1"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "e1vw8h5t"
+    },
+    {
+     "type": "text",
+     "name": "Text 2",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "KNOB 1",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "esv8yoh7"
+    },
+    {
+     "type": "text",
+     "name": "Text 3",
+     "x": 0,
+     "y": 48,
+     "scale": 2,
+     "text": "CH:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ehjbbnii"
+    },
+    {
+     "type": "text",
+     "name": "Text 4",
+     "x": 84,
+     "y": 48,
+     "scale": 2,
+     "text": "CC Number:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eu1jnod2"
+    },
+    {
+     "type": "text",
+     "name": "Text 5",
+     "x": 0,
+     "y": 80,
+     "scale": 2,
+     "text": "Knob 2",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e1uy0nnf"
+    },
+    {
+     "type": "text",
+     "name": "Text 6",
+     "x": 0,
+     "y": 96,
+     "scale": 2,
+     "text": "CH:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eyukwndg"
+    },
+    {
+     "type": "text",
+     "name": "Text 7",
+     "x": 84,
+     "y": 96,
+     "scale": 2,
+     "text": "CC Number:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "euhbjjnn"
+    },
+    {
+     "type": "text",
+     "name": "knob3",
+     "x": 0,
+     "y": 128,
+     "scale": 2,
+     "text": "knob 3",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "eun7cvt3"
+    },
+    {
+     "type": "text",
+     "name": "Text 9",
+     "x": 0,
+     "y": 144,
+     "scale": 2,
+     "text": "CH:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "exp4bld1"
+    },
+    {
+     "type": "text",
+     "name": "Text 10",
+     "x": 84,
+     "y": 144,
+     "scale": 2,
+     "text": "CC Number:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "elceg5uj"
+    },
+    {
+     "type": "text",
+     "name": "Text 11",
+     "x": 0,
+     "y": 176,
+     "scale": 2,
+     "text": "knob 4",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e2oo8sen"
+    },
+    {
+     "type": "text",
+     "name": "Text 12",
+     "x": 0,
+     "y": 192,
+     "scale": 2,
+     "text": "CH:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "essvnjsn"
+    },
+    {
+     "type": "text",
+     "name": "Text 13",
+     "x": 84,
+     "y": 192,
+     "scale": 2,
+     "text": "CC Number:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "etyhbbzp"
+    },
+    {
+     "type": "text",
+     "name": "knob 1 midi channel",
+     "x": 36,
+     "y": 48,
+     "scale": 2,
+     "text": "16",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eos7iiks"
+    },
+    {
+     "type": "text",
+     "name": "knob 2 midi channel",
+     "x": 36,
+     "y": 96,
+     "scale": 2,
+     "text": "15",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eewx8wix"
+    },
+    {
+     "type": "text",
+     "name": "knob 3 midi channel",
+     "x": 36,
+     "y": 144,
+     "scale": 2,
+     "text": "15",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "egzr0jfz"
+    },
+    {
+     "type": "text",
+     "name": "knob 4 midi channel",
+     "x": 36,
+     "y": 192,
+     "scale": 2,
+     "text": "02",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ee5q723k"
+    },
+    {
+     "type": "text",
+     "name": "knob 1 cc number",
+     "x": 204,
+     "y": 48,
+     "scale": 2,
+     "text": "120",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "er29lh2g"
+    },
+    {
+     "type": "text",
+     "name": "knob 2 cc number",
+     "x": 204,
+     "y": 96,
+     "scale": 2,
+     "text": "035",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ehf5tm2q"
+    },
+    {
+     "type": "text",
+     "name": "knob 3 cc number",
+     "x": 204,
+     "y": 144,
+     "scale": 2,
+     "text": "074",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eyi9lbzn"
+    },
+    {
+     "type": "text",
+     "name": "knob 4 cc number",
+     "x": 204,
+     "y": 192,
+     "scale": 2,
+     "text": "011",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e6bi77lt"
+    }
+   ],
+   "ascii": [
+    "KNOBS CONFIG",
+    "",
+    "KNOB 1",
+    "CH:16  CC NUMBER:120",
+    "",
+    "KNOB 2",
+    "CH:15  CC NUMBER:035",
+    "",
+    "KNOB 3",
+    "CH:15  CC NUMBER:074",
+    "",
+    "KNOB 4",
+    "CH:02  CC NUMBER:011",
+    "",
+    ""
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "sx3i4iyl",
+   "name": "Metronome",
+   "notes": "Built. Clicks on every page while ENABLED and the clock runs. Settings are global, not per patch (Q11), written to Flash when leaving the page. See design/clock-and-metronome.md.",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "EDIT",
+     "action": "Go to this screen (cycles Knobs Config -> Metronome)"
+    },
+    {
+     "control": "SELECT",
+     "action": "Cycles ENABLED -> TIME BASE -> BEATS/BAR -> CLICK FREQ -> 1ST BEAT"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Select value for focused field (frequencies in 10 Hz steps)"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/cycle value for focused field (frequencies in 100 Hz steps)"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/cycle value for focused field (frequencies in 100 Hz steps)"
+    },
+    {
+     "control": "REC",
+     "action": "Toggles ENABLED from any field (quick mute); lit while enabled"
+    },
+    {
+     "control": "MASTER",
+     "action": "Click volume (shown as the VOLUME bar)"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "e29326ml"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "METRONOME",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "e64lg2tj"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "ef8cz2ka"
+    },
+    {
+     "type": "text",
+     "name": "enabled label",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "ENABLED:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e7edcmpb"
+    },
+    {
+     "type": "text",
+     "name": "enabled",
+     "x": 96,
+     "y": 32,
+     "scale": 2,
+     "text": "ON ",
+     "color": "0x0000",
+     "bg": "0x3C9F",
+     "notes": "ON / OFF. Focused field shown inverted.",
+     "id": "e3u2m7os"
+    },
+    {
+     "type": "text",
+     "name": "time base label",
+     "x": 0,
+     "y": 64,
+     "scale": 2,
+     "text": "TIME BASE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e5af3r09"
+    },
+    {
+     "type": "text",
+     "name": "time base",
+     "x": 120,
+     "y": 64,
+     "scale": 2,
+     "text": "1/4",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "1/4, 1/8, 1/16, 1/32: a click every 24, 12, 6 or 3 ticks",
+     "id": "efquo6sb"
+    },
+    {
+     "type": "text",
+     "name": "beats label",
+     "x": 0,
+     "y": 80,
+     "scale": 2,
+     "text": "BEATS/BAR:",
+     "color": "0xFBA5",
+     "bg": null,
+     "notes": "Added (Q6, settled): needed so 1ST BEAT knows where a bar starts",
+     "id": "eegzgsye"
+    },
+    {
+     "type": "text",
+     "name": "beats per bar",
+     "x": 120,
+     "y": 80,
+     "scale": 2,
+     "text": "4",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "1-16, counted in time-base clicks",
+     "id": "ebannd4y"
+    },
+    {
+     "type": "text",
+     "name": "click label",
+     "x": 0,
+     "y": 112,
+     "scale": 2,
+     "text": "CLICK FREQ:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ez0emrvf"
+    },
+    {
+     "type": "text",
+     "name": "click freq",
+     "x": 156,
+     "y": 112,
+     "scale": 2,
+     "text": "1000HZ",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "200-4000 Hz (Q7)",
+     "id": "etva0hip"
+    },
+    {
+     "type": "text",
+     "name": "accent label",
+     "x": 0,
+     "y": 128,
+     "scale": 2,
+     "text": "1ST BEAT:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "egad35l9"
+    },
+    {
+     "type": "text",
+     "name": "accent freq",
+     "x": 156,
+     "y": 128,
+     "scale": 2,
+     "text": "1500HZ",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "200-4000 Hz; first click of each bar",
+     "id": "em26mi0y"
+    },
+    {
+     "type": "text",
+     "name": "volume label",
+     "x": 0,
+     "y": 160,
+     "scale": 2,
+     "text": "VOLUME",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "ehz0nart"
+    },
+    {
+     "type": "bar",
+     "name": "volume bar",
+     "x": 0,
+     "y": 181,
+     "w": 240,
+     "h": 6,
+     "color": "0x07FF",
+     "bg": "0x18E3",
+     "border": null,
+     "orientation": "horizontal",
+     "value": 70,
+     "notes": "MASTER pot, read-only. Own row: the firmware draws bars across a whole text row.",
+     "id": "ebnlzgcj"
+    },
+    {
+     "type": "text",
+     "name": "clock state",
+     "x": 0,
+     "y": 192,
+     "scale": 2,
+     "text": "CLOCK:USB RUN",
+     "color": "0x738E",
+     "bg": null,
+     "notes": "Source and state from the clock lockout",
+     "id": "en2qavsy"
+    },
+    {
+     "type": "text",
+     "name": "position",
+     "x": 0,
+     "y": 208,
+     "scale": 2,
+     "text": "BAR:0012 BEAT:3",
+     "color": "0x738E",
+     "bg": null,
+     "notes": "Counted from START; resumes on CONTINUE",
+     "id": "eeefnpax"
+    },
+    {
+     "type": "text",
+     "name": "rec hint",
+     "x": 0,
+     "y": 224,
+     "scale": 2,
+     "text": "REC:ON/OFF",
+     "color": "0x738E",
+     "bg": null,
+     "id": "erechint1"
+    }
+   ],
+   "ascii": [
+    "METRONOME",
+    "",
+    "ENABLED:ON",
+    "",
+    "TIME BASE:1/4",
+    "BEATS/BAR:4",
+    "",
+    "CLICK FREQ:  1000HZ",
+    "1ST BEAT:    1500HZ",
+    "",
+    "VOLUME",
+    "",
+    "CLOCK:USB RUN",
+    "BAR:0012 BEAT:3",
+    "REC:ON/OFF"
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "s9fmiymb",
+   "name": "Live keys",
+   "notes": "",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "ARP",
+     "action": "Go to this screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Cycles through editable fields (in blue)"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Select value for focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Octave shift up for keys"
+    },
+    {
+     "control": "OCT-",
+     "action": "Octave shift down for keys"
+    },
+    {
+     "control": "KEYS",
+     "action": "Sends MIDI notes on selected channel with randomized velocity in range"
+    },
+    {
+     "control": "REC",
+     "action": "Sends Bank Select and Program Change messages"
+    },
+    {
+     "control": "ENV",
+     "action": "Puts the last note or Program Change sent into Build Message Rule IN (port USB) and opens it"
+    },
+    {
+     "control": "LFO",
+     "action": "Puts the last note or Program Change sent into Build Message Rule OUT and opens it"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "eav1hzrd"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "Live Keys",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "efco89s1"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "e525v8fb"
+    },
+    {
+     "type": "text",
+     "name": "Text 3",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "CH:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eone9uan"
+    },
+    {
+     "type": "text",
+     "name": "Text 4",
+     "x": 0,
+     "y": 64,
+     "scale": 2,
+     "text": "Velocity",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "ev18ecd7"
+    },
+    {
+     "type": "text",
+     "name": "midi channel",
+     "x": 36,
+     "y": 32,
+     "scale": 2,
+     "text": "16",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "euxu24d6"
+    },
+    {
+     "type": "text",
+     "name": "Text 5",
+     "x": 0,
+     "y": 80,
+     "scale": 2,
+     "text": "MIN:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ewc90j67"
+    },
+    {
+     "type": "text",
+     "name": "Text 6",
+     "x": 132,
+     "y": 80,
+     "scale": 2,
+     "text": "MAX:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e0ancsq1"
+    },
+    {
+     "type": "text",
+     "name": "Text 7",
+     "x": 48,
+     "y": 80,
+     "scale": 2,
+     "text": "100",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eju1j5xd"
+    },
+    {
+     "type": "text",
+     "name": "Text 8",
+     "x": 180,
+     "y": 80,
+     "scale": 2,
+     "text": "127",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e59s7lm5"
+    },
+    {
+     "type": "text",
+     "name": "Text 9",
+     "x": 0,
+     "y": 144,
+     "scale": 2,
+     "text": "PROGRAM CHANGE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ezle66kf"
+    },
+    {
+     "type": "text",
+     "name": "Text 10",
+     "x": 180,
+     "y": 144,
+     "scale": 2,
+     "text": "064",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ewpoqy5n"
+    },
+    {
+     "type": "text",
+     "name": "Text 11",
+     "x": 0,
+     "y": 176,
+     "scale": 2,
+     "text": "Bank Select",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "egjg2x4u"
+    },
+    {
+     "type": "text",
+     "name": "Text 12",
+     "x": 0,
+     "y": 192,
+     "scale": 2,
+     "text": "MSB:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e8rf8pvn"
+    },
+    {
+     "type": "text",
+     "name": "Text 13",
+     "x": 48,
+     "y": 192,
+     "scale": 2,
+     "text": "OFF",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "0-127, OFF",
+     "id": "elr3vvw7"
+    },
+    {
+     "type": "text",
+     "name": "Text 14",
+     "x": 132,
+     "y": 192,
+     "scale": 2,
+     "text": "LSB:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e0re7of6"
+    },
+    {
+     "type": "text",
+     "name": "Text 15",
+     "x": 180,
+     "y": 192,
+     "scale": 2,
+     "text": "OFF",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "0-127, OFF",
+     "id": "een6ahct"
+    },
+    {
+     "type": "text",
+     "name": "Text 16",
+     "x": 0,
+     "y": 112,
+     "scale": 2,
+     "text": "Octave:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "efkhi3nm"
+    },
+    {
+     "type": "text",
+     "name": "octave",
+     "x": 84,
+     "y": 112,
+     "scale": 2,
+     "text": "+1",
+     "color": "0xED18",
+     "bg": null,
+     "notes": "Set with the OCT- / OCT+ buttons",
+     "id": "et84ttna"
+    }
+   ],
+   "ascii": [
+    "LIVE KEYS",
+    "",
+    "CH:16",
+    "",
+    "VELOCITY",
+    "MIN:100    MAX:127",
+    "",
+    "OCTAVE:+1",
+    "",
+    "PROGRAM CHANGE:064",
+    "",
+    "BANK SELECT",
+    "MSB:OFF    LSB:OFF",
+    "",
+    ""
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "s10c17gw",
+   "name": "Patch Select",
+   "notes": "",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "SAVE",
+     "action": "Go to this screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Cycles through editable fields; inside the name, moves the cursor one character"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Select value for focused field; inside the name, picks the character"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/cycle value for focused field"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/cycle value for focused field"
+    },
+    {
+     "control": "KEYS",
+     "action": "Lower 16 white keys select patch 1-16; ignored while the name is focused"
+    },
+    {
+     "control": "PLAY",
+     "action": "Loads from currently selected patch"
+    },
+    {
+     "control": "REC",
+     "action": "Saves into currently selected patch, requires 2nd press to confirm"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "e32gm00t"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "Patch Select",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "eo0j0vsh"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "exrbu6z2"
+    },
+    {
+     "type": "text",
+     "name": "Text 8",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "Patch Number:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ehmsddf4"
+    },
+    {
+     "type": "text",
+     "name": "patch number",
+     "x": 156,
+     "y": 32,
+     "scale": 2,
+     "text": "16",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "1-16",
+     "id": "emsq8xmk"
+    },
+    {
+     "type": "text",
+     "name": "Text 4",
+     "x": 0,
+     "y": 64,
+     "scale": 2,
+     "text": "NAME:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "enpcowq1"
+    },
+    {
+     "type": "text",
+     "name": "patch name",
+     "x": 72,
+     "y": 64,
+     "scale": 2,
+     "text": "My Patch 16",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "Max 12 chars. SELECT moves the cursor, ALGORITHM (or OCT-/OCT+) cycles A-Z, 0-9, dash, space",
+     "id": "ew72skrt"
+    }
+   ],
+   "ascii": [
+    "PATCH SELECT",
+    "",
+    "PATCH NUMBER:16",
+    "",
+    "NAME: MY PATCH 16",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "se1eh1zn",
+   "name": "Channel Remap List",
+   "notes": "",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "FX",
+     "action": "Go to this screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Scrolls through mapping rule list"
+    },
+    {
+     "control": "REC",
+     "action": "Deletes the selected rule, requires 2nd press to confirm"
+    },
+    {
+     "control": "PLAY",
+     "action": "Goes to Add Channel Mapping page"
+    },
+    {
+     "control": "OCT-",
+     "action": "Scroll up through mapping rule list"
+    },
+    {
+     "control": "OCT+",
+     "action": "Scroll down through mapping rule list"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "e07iywpw"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "CHANNEL REMAP",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "ehucj8ru"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "eei8o68a"
+    },
+    {
+     "type": "list",
+     "name": "map rule list",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "rows": 13,
+     "rowHeight": 16,
+     "maxChars": 20,
+     "color": "0xEF5D",
+     "bg": null,
+     "hlRow": -1,
+     "hlColor": "0x0000",
+     "hlBg": "0x3C9F",
+     "lines": [
+      "    U    12       16",
+      "    T    13       15",
+      "    T    14       15",
+      "    B    01       02"
+     ],
+     "id": "e2gfwhke"
+    },
+    {
+     "type": "text",
+     "name": "Text 2",
+     "x": 0,
+     "y": 16,
+     "scale": 2,
+     "text": "SRC PORT CH ->OUT CH",
+     "color": "0x07FF",
+     "bg": "0x0000",
+     "id": "ervijo4q"
+    }
+   ],
+   "ascii": [
+    "CHANNEL REMAP",
+    "SRC PORT CH ->OUT CH",
+    "    U    12       16",
+    "    T    13       15",
+    "    T    14       15",
+    "    B    01       02",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "s4gngah6",
+   "name": "Add ch remap rule",
+   "notes": "can't get here directly, arrive here from \"channel remap list\" page",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "FX",
+     "action": "Return to channel remap list"
+    },
+    {
+     "control": "SELECT",
+     "action": "Cycle through editable fields (cursor field select)"
+    },
+    {
+     "control": "KEYS",
+     "action": "Lower 16 white keys select midi channel when focused on a channel field"
+    },
+    {
+     "control": "REC",
+     "action": "Saves the rule, returns to Channel Remap list, requires 2nd press to confirm"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/cycle value for focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/cycle value for focused field"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Select value for focused field"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "ec4u67k4"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "ADD CHANNEL RULE",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "eeikxgqe"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "en371h4j"
+    },
+    {
+     "type": "text",
+     "name": "Input Port",
+     "x": 12,
+     "y": 48,
+     "scale": 2,
+     "text": "Input Port:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eu7tmom4"
+    },
+    {
+     "type": "text",
+     "name": "input port value",
+     "x": 144,
+     "y": 48,
+     "scale": 2,
+     "text": "USB",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ehs49irv"
+    },
+    {
+     "type": "text",
+     "name": "Text 4",
+     "x": 12,
+     "y": 80,
+     "scale": 2,
+     "text": "input channel:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eqa3ibze"
+    },
+    {
+     "type": "text",
+     "name": "Text 5",
+     "x": 180,
+     "y": 80,
+     "scale": 2,
+     "text": "10",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eicb56ib"
+    },
+    {
+     "type": "text",
+     "name": "Text 6",
+     "x": 12,
+     "y": 128,
+     "scale": 2,
+     "text": "output channel:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "er5q8znn"
+    },
+    {
+     "type": "text",
+     "name": "Text 7",
+     "x": 192,
+     "y": 128,
+     "scale": 2,
+     "text": "01",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eb2yn86x"
+    },
+    {
+     "type": "text",
+     "name": "Text 8",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "Source",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "eljjmoea"
+    },
+    {
+     "type": "text",
+     "name": "Text 9",
+     "x": 0,
+     "y": 112,
+     "scale": 2,
+     "text": "Destination",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e0ubei4p"
+    }
+   ],
+   "ascii": [
+    "ADD CHANNEL RULE",
+    "",
+    "SOURCE",
+    " INPUT PORT:USB",
+    "",
+    " INPUT CHANNEL:10",
+    "",
+    "DESTINATION",
+    " OUTPUT CHANNEL:01",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "s4hqizt1",
+   "name": "Sysex Dump",
+   "notes": "",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "SAVE",
+     "action": "Go to this screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Cycle through editable fields (cursor field select)"
+    },
+    {
+     "control": "KEYS",
+     "action": "Lower 16 white keys select patch 1-16 when Patch Number is focused"
+    },
+    {
+     "control": "REC",
+     "action": "Sends the Sysex message via MIDI out ports"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/cycle value for focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/cycle value for focused field"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Set value for focused field"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "e5oaomdd"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "Sysex Dump",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "e2mrhxe2"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "ex7y17l1"
+    },
+    {
+     "type": "text",
+     "name": "Text 8",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "Sysex Payload",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "eg2qa97z"
+    },
+    {
+     "type": "text",
+     "name": "Text 3",
+     "x": 12,
+     "y": 48,
+     "scale": 2,
+     "text": "Patch Number:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eiujj01k"
+    },
+    {
+     "type": "text",
+     "name": "Text 4",
+     "x": 168,
+     "y": 48,
+     "scale": 2,
+     "text": "16",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "1-16,ALL",
+     "id": "egrkzccq"
+    },
+    {
+     "type": "text",
+     "name": "Text 5",
+     "x": 0,
+     "y": 112,
+     "scale": 2,
+     "text": "Config",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e80i9zo5"
+    },
+    {
+     "type": "text",
+     "name": "Text 6",
+     "x": 12,
+     "y": 128,
+     "scale": 2,
+     "text": "Allow Dump Req:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e3o3x18q"
+    },
+    {
+     "type": "text",
+     "name": "Text 7",
+     "x": 192,
+     "y": 128,
+     "scale": 2,
+     "text": "YES",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "Yes/No",
+     "id": "eici7fpo"
+    },
+    {
+     "type": "text",
+     "name": "Text 8",
+     "x": 12,
+     "y": 160,
+     "scale": 2,
+     "text": "Device ID:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eqtyy5bm"
+    },
+    {
+     "type": "text",
+     "name": "Text 9",
+     "x": 132,
+     "y": 160,
+     "scale": 2,
+     "text": "17",
+     "color": "0x3C9F",
+     "bg": "0x0000",
+     "notes": "0-127",
+     "id": "egem1nqr"
+    }
+   ],
+   "ascii": [
+    "SYSEX DUMP",
+    "",
+    "SYSEX PAYLOAD",
+    " PATCH NUMBER:16",
+    "",
+    "",
+    "",
+    "CONFIG",
+    " ALLOW DUMP REQ:YES",
+    "",
+    " DEVICE ID:17",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "shzgqp3l",
+   "name": "Message Remap List",
+   "notes": "",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "FX",
+     "action": "Go to this screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Moves focus: P -> CH -> TYP -> rule list"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Select value for focused header field; scrolls the rule list when it is focused"
+    },
+    {
+     "control": "KEYS",
+     "action": "Lower 16 white keys select the midi channel in the header"
+    },
+    {
+     "control": "REC",
+     "action": "Deletes the selected rule (rule list focused), requires 2nd press to confirm"
+    },
+    {
+     "control": "PLAY",
+     "action": "Goes to Add Message Mapping page"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/cycle focused header field; scroll up when the rule list is focused"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/cycle focused header field; scroll down when the rule list is focused"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "ebvq2123"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "MESSAGE REMAP",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "es5slhwj"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "edxw5r0u"
+    },
+    {
+     "type": "list",
+     "name": "map rule list",
+     "x": 0,
+     "y": 48,
+     "scale": 2,
+     "rows": 12,
+     "rowHeight": 16,
+     "maxChars": 20,
+     "color": "0xEF5D",
+     "bg": null,
+     "hlRow": -1,
+     "hlColor": "0x0000",
+     "hlBg": "0x3C9F",
+     "lines": [
+      "100    127      10",
+      "033    127      11",
+      "091    127      11",
+      "023    127      12",
+      "101    127      12"
+     ],
+     "id": "emr7nr4a"
+    },
+    {
+     "type": "text",
+     "name": "Text 2",
+     "x": 0,
+     "y": 16,
+     "scale": 2,
+     "text": "P:",
+     "color": "0xFBA5",
+     "bg": "0x0000",
+     "id": "eyq9w3h6"
+    },
+    {
+     "type": "text",
+     "name": "input port",
+     "x": 24,
+     "y": 16,
+     "scale": 2,
+     "text": "USB",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ee92mg2u"
+    },
+    {
+     "type": "text",
+     "name": "Text 4",
+     "x": 72,
+     "y": 16,
+     "scale": 2,
+     "text": "CH:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e42w68d5"
+    },
+    {
+     "type": "text",
+     "name": "input channel",
+     "x": 108,
+     "y": 16,
+     "scale": 2,
+     "text": "16",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ekhhihmf"
+    },
+    {
+     "type": "text",
+     "name": "Text 6",
+     "x": 144,
+     "y": 16,
+     "scale": 2,
+     "text": "TYP:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ewn8zq0k"
+    },
+    {
+     "type": "text",
+     "name": "midi message type",
+     "x": 192,
+     "y": 16,
+     "scale": 2,
+     "text": "NON",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ez6ohpws"
+    },
+    {
+     "type": "text",
+     "name": "Text 8",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "INP -> MAP TO   CH",
+     "color": "0x07FF",
+     "bg": null,
+     "id": "ex7u5hgu"
+    }
+   ],
+   "ascii": [
+    "MESSAGE REMAP",
+    "P:USB CH:16 TYP:NON",
+    "INP -> MAP TO   CH",
+    "100    127      10",
+    "033    127      11",
+    "091    127      11",
+    "023    127      12",
+    "101    127      12",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "su9mo0mt",
+   "name": "Add Message Remap Rule",
+   "notes": "",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "FX",
+     "action": "Return to message remap list"
+    },
+    {
+     "control": "SELECT",
+     "action": "Cycles through editable fields (cursor)"
+    },
+    {
+     "control": "KEYS",
+     "action": "Lower 16 white keys select midi output channel"
+    },
+    {
+     "control": "REC",
+     "action": "Adds the rule to the message remap list, requires 2nd press to confirm"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/cycle value for focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/cycle value for focused field"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Select value for focused field"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "ee8pknq0"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "ADD MESSAGE RULE",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "efhanaxx"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "e41l7ka5"
+    },
+    {
+     "type": "text",
+     "name": "Text 2",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "P:",
+     "color": "0x07FF",
+     "bg": "0x0000",
+     "id": "e4qeox01"
+    },
+    {
+     "type": "text",
+     "name": "input port",
+     "x": 24,
+     "y": 32,
+     "scale": 2,
+     "text": "USB",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "e0x4r6qc"
+    },
+    {
+     "type": "text",
+     "name": "Text 4",
+     "x": 72,
+     "y": 32,
+     "scale": 2,
+     "text": "CH:",
+     "color": "0x07FF",
+     "bg": null,
+     "id": "eprhftjx"
+    },
+    {
+     "type": "text",
+     "name": "input channel",
+     "x": 108,
+     "y": 32,
+     "scale": 2,
+     "text": "16",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "eh373o3v"
+    },
+    {
+     "type": "text",
+     "name": "Text 6",
+     "x": 144,
+     "y": 32,
+     "scale": 2,
+     "text": "TYP:",
+     "color": "0x07FF",
+     "bg": null,
+     "id": "ec4wu4u4"
+    },
+    {
+     "type": "text",
+     "name": "midi message type",
+     "x": 192,
+     "y": 32,
+     "scale": 2,
+     "text": "NON",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "etuoynnm"
+    },
+    {
+     "type": "text",
+     "name": "Text 8",
+     "x": 0,
+     "y": 64,
+     "scale": 2,
+     "text": "input value:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "etz9xgjk"
+    },
+    {
+     "type": "text",
+     "name": "Text 9",
+     "x": 168,
+     "y": 64,
+     "scale": 2,
+     "text": "097",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "emt42z0m"
+    },
+    {
+     "type": "text",
+     "name": "output value",
+     "x": 0,
+     "y": 96,
+     "scale": 2,
+     "text": "output value:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e24p5yol"
+    },
+    {
+     "type": "text",
+     "name": "Text 11",
+     "x": 168,
+     "y": 96,
+     "scale": 2,
+     "text": "127",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e2f60wbr"
+    },
+    {
+     "type": "text",
+     "name": "Text 12",
+     "x": 0,
+     "y": 128,
+     "scale": 2,
+     "text": "OUT MIDI CHANNEL:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e9jlymie"
+    },
+    {
+     "type": "text",
+     "name": "out midi channel",
+     "x": 204,
+     "y": 128,
+     "scale": 2,
+     "text": "16",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "defaults to same as input channel above",
+     "id": "eatnorwg"
+    }
+   ],
+   "ascii": [
+    "ADD MESSAGE RULE",
+    "",
+    "P:USB CH:16 TYP:NON",
+    "",
+    "INPUT VALUE:  097",
+    "",
+    "OUTPUT VALUE: 127",
+    "",
+    "OUT MIDI CHANNEL:16",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "svsz2tm6",
+   "name": "Build Message Rule",
+   "notes": "Scratchpad for message rules (design/rule-builder.md). Not stored; cleared at reboot or after a save. Empty half shows --- in dim. OUT type follows IN.",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "GLO",
+     "action": "Opens this screen from any page; on this screen returns to the page it came from"
+    },
+    {
+     "control": "SELECT",
+     "action": "Moves focus: IN P, CH, TYP, VALUE, OUT CH, VALUE"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Changes the focused field"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/cycle the focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/cycle the focused field"
+    },
+    {
+     "control": "KEYS",
+     "action": "Lower 16 white keys set the focused CH field"
+    },
+    {
+     "control": "REC",
+     "action": "Adds the rule to its Message Remap list (two presses), then clears the screen"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "e7ve2bac"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "BUILD MESSAGE RULE",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "e2s7t4az"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "evytrmm7"
+    },
+    {
+     "type": "text",
+     "name": "IN heading",
+     "x": 0,
+     "y": 16,
+     "scale": 2,
+     "text": "IN",
+     "color": "0x07FF",
+     "bg": null,
+     "id": "ef9er582"
+    },
+    {
+     "type": "text",
+     "name": "P:",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "P:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ekem2wpa"
+    },
+    {
+     "type": "text",
+     "name": "in port",
+     "x": 24,
+     "y": 32,
+     "scale": 2,
+     "text": "USB",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "ekqi6p51"
+    },
+    {
+     "type": "text",
+     "name": "CH:",
+     "x": 72,
+     "y": 32,
+     "scale": 2,
+     "text": "CH:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e2frjx9o"
+    },
+    {
+     "type": "text",
+     "name": "in channel",
+     "x": 108,
+     "y": 32,
+     "scale": 2,
+     "text": "01",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "e17nkey0"
+    },
+    {
+     "type": "text",
+     "name": "TYP:",
+     "x": 144,
+     "y": 32,
+     "scale": 2,
+     "text": "TYP:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eapt7z9v"
+    },
+    {
+     "type": "text",
+     "name": "in type",
+     "x": 192,
+     "y": 32,
+     "scale": 2,
+     "text": "NOTE",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "NOTE, CC or PC",
+     "id": "e2y9v27q"
+    },
+    {
+     "type": "text",
+     "name": "in value label",
+     "x": 0,
+     "y": 48,
+     "scale": 2,
+     "text": "VALUE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eym2ju7e"
+    },
+    {
+     "type": "text",
+     "name": "in value",
+     "x": 72,
+     "y": 48,
+     "scale": 2,
+     "text": "060",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eegi4936"
+    },
+    {
+     "type": "text",
+     "name": "in note name",
+     "x": 72,
+     "y": 64,
+     "scale": 2,
+     "text": "C4",
+     "color": "0x738E",
+     "bg": null,
+     "notes": "NOTE only",
+     "id": "eivtzvf9"
+    },
+    {
+     "type": "text",
+     "name": "OUT heading",
+     "x": 0,
+     "y": 80,
+     "scale": 2,
+     "text": "OUT",
+     "color": "0x07FF",
+     "bg": null,
+     "id": "efgtxz2j"
+    },
+    {
+     "type": "text",
+     "name": "out ch label",
+     "x": 0,
+     "y": 96,
+     "scale": 2,
+     "text": "CH:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eerhlemg"
+    },
+    {
+     "type": "text",
+     "name": "out channel",
+     "x": 36,
+     "y": 96,
+     "scale": 2,
+     "text": "01",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "er5mycmz"
+    },
+    {
+     "type": "text",
+     "name": "out value label",
+     "x": 72,
+     "y": 96,
+     "scale": 2,
+     "text": "VALUE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eok5kask"
+    },
+    {
+     "type": "text",
+     "name": "out value",
+     "x": 144,
+     "y": 96,
+     "scale": 2,
+     "text": "062",
+     "color": "0x3C9F",
+     "bg": null,
+     "id": "eqz691ec"
+    },
+    {
+     "type": "text",
+     "name": "out note name",
+     "x": 144,
+     "y": 112,
+     "scale": 2,
+     "text": "D4",
+     "color": "0x738E",
+     "bg": null,
+     "notes": "NOTE only",
+     "id": "ei490dt4"
+    },
+    {
+     "type": "text",
+     "name": "status",
+     "x": 0,
+     "y": 144,
+     "scale": 2,
+     "text": "REPLACES A RULE",
+     "color": "0xFD20",
+     "bg": null,
+     "notes": "F5:IN  G5:OUT / NEEDS IN / NEEDS OUT / REC TO ADD (dim), TYPE MISMATCH, LIST FULL (32), PATCH FULL (256) (red), REPLACES A RULE (amber), ADDED: USB 01 NOTE (green, 3 s)",
+     "id": "e84bbe9f"
+    },
+    {
+     "type": "text",
+     "name": "save prompt",
+     "x": 0,
+     "y": 176,
+     "scale": 2,
+     "text": "REC AGAIN TO SAVE",
+     "color": "0x738E",
+     "bg": null,
+     "notes": "while the save is armed",
+     "id": "ehnjb0ck"
+    },
+    {
+     "type": "text",
+     "name": "hint",
+     "x": 0,
+     "y": 208,
+     "scale": 2,
+     "text": "F5/ENV:IN G5/LFO:OUT",
+     "color": "0x738E",
+     "bg": null,
+     "id": "ernz4hkx"
+    }
+   ],
+   "ascii": [
+    "BUILD MESSAGE RULE",
+    "IN",
+    "P:USB CH:01 TYP:NOTE",
+    "VALUE:060",
+    "      C4",
+    "OUT",
+    "CH:01 VALUE:062",
+    "            D4",
+    "",
+    "REPLACES A RULE",
+    "",
+    "REC AGAIN TO SAVE",
+    "",
+    "F5/ENV:IN G5/LFO:OUT",
+    ""
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "s9edn581",
+   "name": "Event Triggers",
+   "notes": "Triggers fire in list order. # = number of messages. See design/event-triggers.md.",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "SEL",
+     "action": "Go to this screen"
+    },
+    {
+     "control": "SELECT",
+     "action": "Moves the selection through the triggers, then + NEW TRIGGER"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Moves the selection"
+    },
+    {
+     "control": "OCT-",
+     "action": "Selection up"
+    },
+    {
+     "control": "OCT+",
+     "action": "Selection down"
+    },
+    {
+     "control": "PLAY",
+     "action": "Opens the selected trigger in Edit Trigger; on + NEW TRIGGER adds one and opens it"
+    },
+    {
+     "control": "REC",
+     "action": "Deletes the selected trigger, requires 2nd press to confirm"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "eujzde8g"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "EVENT TRIGGERS",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "exd6ncf1"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "e0epf91d"
+    },
+    {
+     "type": "text",
+     "name": "column headings",
+     "x": 0,
+     "y": 16,
+     "scale": 2,
+     "text": "P CH TYP D1      #",
+     "color": "0x07FF",
+     "bg": null,
+     "id": "ehodzdoc"
+    },
+    {
+     "type": "list",
+     "name": "trigger list",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "rows": 12,
+     "rowHeight": 16,
+     "maxChars": 20,
+     "color": "0xEF5D",
+     "bg": null,
+     "hlRow": 1,
+     "hlColor": "0x0000",
+     "hlBg": "0x3C9F",
+     "lines": [
+      "U 01 PC  000-127 04",
+      "U 01 PC  005-005 12",
+      "T 10 NON 036-036 02",
+      "U 01 CC  064-064 01",
+      "+ NEW TRIGGER"
+     ],
+     "id": "e9is0j8h"
+    },
+    {
+     "type": "text",
+     "name": "footer",
+     "x": 0,
+     "y": 224,
+     "scale": 2,
+     "text": "TRIGS:04 MSGS:019",
+     "color": "0x738E",
+     "bg": null,
+     "notes": "triggers in the patch (max 32), messages in all triggers (max 256)",
+     "id": "et9lgmxg"
+    }
+   ],
+   "ascii": [
+    "EVENT TRIGGERS",
+    "P CH TYP D1      #",
+    "U 01 PC  000-127 04",
+    "U 01 PC  005-005 12",
+    "T 10 NON 036-036 02",
+    "U 01 CC  064-064 01",
+    "+ NEW TRIGGER",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "TRIGS:04 MSGS:019"
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "s2wxfogo",
+   "name": "Edit Trigger",
+   "notes": "Edits apply at once (no save step); they are stored with the patch on Patch Select (Q9).",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "SEL",
+     "action": "Return to Event Triggers"
+    },
+    {
+     "control": "SELECT",
+     "action": "Cycles PORT -> CH -> TYPE -> D1 FROM -> D1 TO -> D2 FROM -> D2 TO -> PASS INPUT -> FIRE (D2 skipped for PC)"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Select value for focused field"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/cycle value for focused field"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/cycle value for focused field"
+    },
+    {
+     "control": "KEYS",
+     "action": "Lower 16 white keys select the input channel"
+    },
+    {
+     "control": "PLAY",
+     "action": "Opens Trigger Messages"
+    },
+    {
+     "control": "REC",
+     "action": "Test: sends the trigger's messages now (IN values use the lower range ends)"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "eu33xtpl"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "EDIT TRIGGER 02",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "epft75v2"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "eseh60kv"
+    },
+    {
+     "type": "text",
+     "name": "port label",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "PORT:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ej50ce9u"
+    },
+    {
+     "type": "text",
+     "name": "input port",
+     "x": 60,
+     "y": 32,
+     "scale": 2,
+     "text": "USB",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "TRS/USB/BLE",
+     "id": "evw53efr"
+    },
+    {
+     "type": "text",
+     "name": "channel label",
+     "x": 132,
+     "y": 32,
+     "scale": 2,
+     "text": "CH:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e4edt2sy"
+    },
+    {
+     "type": "text",
+     "name": "input channel",
+     "x": 168,
+     "y": 32,
+     "scale": 2,
+     "text": "01",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "1-16",
+     "id": "ewb3wkh5"
+    },
+    {
+     "type": "text",
+     "name": "type label",
+     "x": 0,
+     "y": 48,
+     "scale": 2,
+     "text": "TYPE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ednsipzz"
+    },
+    {
+     "type": "text",
+     "name": "type",
+     "x": 60,
+     "y": 48,
+     "scale": 2,
+     "text": "PC",
+     "color": "0x0000",
+     "bg": "0x3C9F",
+     "notes": "NON/NOF/CC/PC. Shown focused.",
+     "id": "e5fk2z9r"
+    },
+    {
+     "type": "text",
+     "name": "d1 from label",
+     "x": 0,
+     "y": 80,
+     "scale": 2,
+     "text": "D1 FROM:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ei19r0wy"
+    },
+    {
+     "type": "text",
+     "name": "d1 from",
+     "x": 96,
+     "y": 80,
+     "scale": 2,
+     "text": "005",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "0-127, <= TO",
+     "id": "eojfljoo"
+    },
+    {
+     "type": "text",
+     "name": "d1 to label",
+     "x": 144,
+     "y": 80,
+     "scale": 2,
+     "text": "TO:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "ea5lqsaj"
+    },
+    {
+     "type": "text",
+     "name": "d1 to",
+     "x": 180,
+     "y": 80,
+     "scale": 2,
+     "text": "005",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "0-127, >= FROM",
+     "id": "e08xui6d"
+    },
+    {
+     "type": "text",
+     "name": "d1 note hint",
+     "x": 96,
+     "y": 96,
+     "scale": 2,
+     "text": "",
+     "color": "0x738E",
+     "bg": null,
+     "notes": "NON/NOF only: note names of the range, e.g. C4-C4",
+     "id": "e39zzzzg"
+    },
+    {
+     "type": "text",
+     "name": "d2 from label",
+     "x": 0,
+     "y": 112,
+     "scale": 2,
+     "text": "D2 FROM:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e4zdmen2"
+    },
+    {
+     "type": "text",
+     "name": "d2 from",
+     "x": 96,
+     "y": 112,
+     "scale": 2,
+     "text": "---",
+     "color": "0x738E",
+     "bg": null,
+     "notes": "velocity/value 0-127; --- and skipped for PC",
+     "id": "ekhvdgaj"
+    },
+    {
+     "type": "text",
+     "name": "d2 to label",
+     "x": 144,
+     "y": 112,
+     "scale": 2,
+     "text": "TO:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e8gxbeny"
+    },
+    {
+     "type": "text",
+     "name": "d2 to",
+     "x": 180,
+     "y": 112,
+     "scale": 2,
+     "text": "---",
+     "color": "0x738E",
+     "bg": null,
+     "id": "ejqwx4hh"
+    },
+    {
+     "type": "text",
+     "name": "pass label",
+     "x": 0,
+     "y": 144,
+     "scale": 2,
+     "text": "PASS INPUT:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e5344tfj"
+    },
+    {
+     "type": "text",
+     "name": "pass input",
+     "x": 132,
+     "y": 144,
+     "scale": 2,
+     "text": "YES",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "YES/NO: NO stops the triggering message (Q2)",
+     "id": "egvq4k7b"
+    },
+    {
+     "type": "text",
+     "name": "fire label",
+     "x": 0,
+     "y": 160,
+     "scale": 2,
+     "text": "FIRE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "en7xj8b7"
+    },
+    {
+     "type": "text",
+     "name": "fire mode",
+     "x": 60,
+     "y": 160,
+     "scale": 2,
+     "text": "ENTER",
+     "color": "0x3C9F",
+     "bg": null,
+     "notes": "EVERY/ENTER, default ENTER (Q3)",
+     "id": "etfq7xkw"
+    },
+    {
+     "type": "text",
+     "name": "messages label",
+     "x": 0,
+     "y": 192,
+     "scale": 2,
+     "text": "MESSAGES:",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "eo886vom"
+    },
+    {
+     "type": "text",
+     "name": "message count",
+     "x": 108,
+     "y": 192,
+     "scale": 2,
+     "text": "12",
+     "color": "0xEF5D",
+     "bg": null,
+     "id": "epzom75w"
+    },
+    {
+     "type": "text",
+     "name": "hint",
+     "x": 0,
+     "y": 224,
+     "scale": 2,
+     "text": "PLAY:MSGS  REC:TEST",
+     "color": "0x738E",
+     "bg": null,
+     "id": "ebbr4qmw"
+    }
+   ],
+   "ascii": [
+    "EDIT TRIGGER 02",
+    "",
+    "PORT:USB   CH:01",
+    "TYPE:PC",
+    "",
+    "D1 FROM:005 TO:005",
+    "",
+    "D2 FROM:--- TO:---",
+    "",
+    "PASS INPUT:YES",
+    "FIRE:ENTER",
+    "",
+    "MESSAGES:12",
+    "",
+    "PLAY:MSGS  REC:TEST"
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "s706i8j7",
+   "name": "Trigger Messages",
+   "notes": "Sent top to bottom. IN copies the triggering message's data 1 or 2 (Q4).",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "SEL",
+     "action": "Return to Edit Trigger"
+    },
+    {
+     "control": "SELECT",
+     "action": "Moves cell by cell: TYP -> CH -> D1 -> D2 of each row, then + ADD MESSAGE (D2 skipped for PC)"
+    },
+    {
+     "control": "ALGORITHM",
+     "action": "Select value for focused cell; D1/D2 step IN, 0..127"
+    },
+    {
+     "control": "OCT-",
+     "action": "Dec/cycle value for focused cell"
+    },
+    {
+     "control": "OCT+",
+     "action": "Inc/cycle value for focused cell"
+    },
+    {
+     "control": "KEYS",
+     "action": "Lower 16 white keys select the channel when a CH cell is focused"
+    },
+    {
+     "control": "PLAY",
+     "action": "Inserts a copy of the focused row below it; on + ADD MESSAGE adds CC 0 on channel 1"
+    },
+    {
+     "control": "REC",
+     "action": "Deletes the focused row, requires 2nd press to confirm"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "e4mvn4a4"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "TRIGGER 02 MESSAGES",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "ewfhym4l"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "e1vfz3zf"
+    },
+    {
+     "type": "text",
+     "name": "column headings",
+     "x": 0,
+     "y": 16,
+     "scale": 2,
+     "text": "## TYP CH D1  D2",
+     "color": "0x07FF",
+     "bg": null,
+     "id": "ekkibj3j"
+    },
+    {
+     "type": "list",
+     "name": "message list",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "rows": 11,
+     "rowHeight": 16,
+     "maxChars": 20,
+     "color": "0xEF5D",
+     "bg": null,
+     "hlRow": -1,
+     "hlColor": "0x0000",
+     "hlBg": "0x3C9F",
+     "lines": [
+      "01 CC  01 000 002",
+      "02 CC  01 032 000",
+      "03 PC  01 005 ---",
+      "04 PC  02 IN  ---",
+      "+ ADD MESSAGE"
+     ],
+     "id": "e4wj99ib"
+    },
+    {
+     "type": "text",
+     "name": "focused cell",
+     "x": 120,
+     "y": 64,
+     "scale": 2,
+     "text": "005",
+     "color": "0x0000",
+     "bg": "0x3C9F",
+     "notes": "the focused cell is black on blue",
+     "id": "eag7i1mn"
+    },
+    {
+     "type": "text",
+     "name": "hint",
+     "x": 0,
+     "y": 208,
+     "scale": 2,
+     "text": "NON WITHOUT NOF",
+     "color": "0xFD20",
+     "bg": null,
+     "notes": "amber when the list has more Note Ons than Note Offs; LIST FULL (32) / PATCH FULL (256) in red after a refused PLAY",
+     "id": "ebqns6pu"
+    },
+    {
+     "type": "text",
+     "name": "footer",
+     "x": 0,
+     "y": 224,
+     "scale": 2,
+     "text": "MSGS:04/32 ALL:019",
+     "color": "0x738E",
+     "bg": null,
+     "notes": "this trigger's messages (max 32), all triggers (max 256); red when the 64-message cap could cut some off",
+     "id": "eq80idw3"
+    }
+   ],
+   "ascii": [
+    "TRIGGER 02 MESSAGES",
+    "## TYP CH D1  D2",
+    "01 CC  01 000 002",
+    "02 CC  01 032 000",
+    "03 PC  01 005 ---",
+    "04 PC  02 IN  ---",
+    "+ ADD MESSAGE",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "NON WITHOUT NOF",
+    "MSGS:04/32 ALL:019"
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  },
+  {
+   "id": "syyaeffh",
+   "name": "Clock Monitor",
+   "notes": "Built. Read-only: nothing takes focus. See design/clock-and-metronome.md.",
+   "background": "0x0000",
+   "controls": [
+    {
+     "control": "SEQ",
+     "action": "Go to this screen"
+    }
+   ],
+   "elements": [
+    {
+     "type": "rect",
+     "name": "Header bg",
+     "x": 0,
+     "y": 0,
+     "w": 240,
+     "h": 16,
+     "color": "0x18E3",
+     "fill": true,
+     "thickness": 1,
+     "id": "ejtopmk9"
+    },
+    {
+     "type": "text",
+     "name": "Title",
+     "x": 0,
+     "y": 0,
+     "scale": 2,
+     "text": "CLOCK MONITOR",
+     "color": "0xAC9F",
+     "bg": null,
+     "id": "emy4f0dg"
+    },
+    {
+     "type": "rect",
+     "name": "TitleUnderline",
+     "x": 0,
+     "y": 15,
+     "w": 240,
+     "h": 1,
+     "color": "0x738E",
+     "fill": true,
+     "thickness": 1,
+     "id": "egc6qpzq"
+    },
+    {
+     "type": "text",
+     "name": "source label",
+     "x": 0,
+     "y": 32,
+     "scale": 2,
+     "text": "SOURCE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e05s7lei"
+    },
+    {
+     "type": "text",
+     "name": "source",
+     "x": 84,
+     "y": 32,
+     "scale": 2,
+     "text": "USB",
+     "color": "0xEF5D",
+     "bg": null,
+     "notes": "Clock owner from the lockout: TRS, USB, BLE or NONE",
+     "id": "eo49ernn"
+    },
+    {
+     "type": "text",
+     "name": "state label",
+     "x": 0,
+     "y": 48,
+     "scale": 2,
+     "text": "STATE:",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "eber02pd"
+    },
+    {
+     "type": "text",
+     "name": "state",
+     "x": 84,
+     "y": 48,
+     "scale": 2,
+     "text": "RUN",
+     "color": "0x07E0",
+     "bg": null,
+     "notes": "RUN (green) from START/CONTINUE; STOP (dim) after STOP",
+     "id": "eclsx7if"
+    },
+    {
+     "type": "text",
+     "name": "bpm label",
+     "x": 0,
+     "y": 80,
+     "scale": 2,
+     "text": "BPM",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "exi2v7ic"
+    },
+    {
+     "type": "text",
+     "name": "bpm",
+     "x": 0,
+     "y": 96,
+     "scale": 4,
+     "text": "120.0",
+     "color": "0xEF5D",
+     "bg": null,
+     "notes": "Average of the last 48 ticks; ---.- when no tick for 1 s. Computed only while this page is shown.",
+     "id": "eb4wtcbe"
+    },
+    {
+     "type": "text",
+     "name": "elapsed label",
+     "x": 0,
+     "y": 144,
+     "scale": 2,
+     "text": "ELAPSED",
+     "color": "0xFBA5",
+     "bg": null,
+     "id": "e4etuiee"
+    },
+    {
+     "type": "text",
+     "name": "elapsed",
+     "x": 0,
+     "y": 160,
+     "scale": 4,
+     "text": "01:23:45",
+     "color": "0xEF5D",
+     "bg": null,
+     "notes": "Since START; pauses on STOP, resumes on CONTINUE. Stops at 99:59:59.",
+     "id": "e28xcivw"
+    }
+   ],
+   "ascii": [
+    "CLOCK MONITOR",
+    "",
+    "SOURCE:USB",
+    "STATE: RUN",
+    "",
+    "BPM",
+    "",
+    "",
+    "",
+    "ELAPSED",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "asciiNote": "Only grid-aligned 2x text and lists are shown."
+  }
+ ]
+}

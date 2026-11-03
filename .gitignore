@@ -53,3 +53,10 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# Personal notes, never committed (matches Scratch.txt too)
+[Ss]cratch.txt
+
+# Python bytecode
+__pycache__/
+*.pyc

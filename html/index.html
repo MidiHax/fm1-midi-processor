@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FM-1 MIDI Processor</title>
+<meta name="description" content="Custom firmware that turns the M-VAVE FM-1 into a MIDI processor: filters, remaps, event triggers, a MIDI monitor and SysEx patch storage.">
+<link rel="stylesheet" href="site.css">
+<style>
+.layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 36px; }
+.toc { position: sticky; top: 72px; align-self: start; font-size: .9rem; max-height: calc(100vh - 90px); overflow: auto; padding-bottom: 20px; }
+.toc a { display: block; text-decoration: none; color: var(--dim); padding: 3px 0 3px 10px; border-left: 2px solid transparent; }
+.toc a:hover { color: var(--text); border-left-color: var(--line); }
+.toc .sub { padding-left: 22px; font-size: .85rem; }
+@media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); } .toc { display: none; } }
+.hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 28px; align-items: center; margin-bottom: 8px; }
+@media (max-width: 760px) { .hero { grid-template-columns: minmax(0, 1fr); } }
+main { min-width: 0; }
+.hero .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.btn { display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; border: 1px solid var(--line); color: var(--text); background: var(--panel2); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.diagram { width: 100%; height: auto; display: block; }
+.diagram text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+.controls th:first-child, .controls td:first-child { width: 120px; white-space: nowrap; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: .4em 0; }
+.chip { font-size: .8rem; padding: 2px 9px; border-radius: 999px; background: var(--panel2); border: 1px solid var(--line); color: var(--dim); }
+.lcd-text { font-family: ui-monospace, Consolas, monospace; font-weight: 700; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="index.html"><span class="dot"></span>FM-1 MIDI Processor</a>
+  <nav><a href="index.html" aria-current="page">Help</a><a href="flash.html">Flash firmware</a></nav>
+</div></header>
+
+<div class="wrap layout">
+<nav class="toc" aria-label="Contents">
+  <a href="#start">Getting started</a>
+  <a href="#panel">The panel</a>
+  <a href="#conventions">How the pages work</a>
+  <a href="#flow">The MIDI pipeline</a>
+  <a href="#monitor">MIDI Monitor</a>
+  <a class="sub" href="#shortcuts">Shortcuts</a>
+  <a class="sub" href="#search">Search</a>
+  <a href="#filters">Filters</a>
+  <a class="sub" href="#channel-filter">Channel Filter</a>
+  <a class="sub" href="#message-filter">Message Filter</a>
+  <a href="#remaps">Remaps</a>
+  <a class="sub" href="#message-remap">Message Remap</a>
+  <a class="sub" href="#channel-remap">Channel Remap</a>
+  <a class="sub" href="#rule-builder">Rule Builder</a>
+  <a href="#triggers">Event Triggers</a>
+  <a class="sub" href="#edit-trigger">Edit Trigger</a>
+  <a class="sub" href="#trigger-messages">Trigger Messages</a>
+  <a href="#knobs">Knobs Config</a>
+  <a href="#clock">MIDI clock</a>
+  <a class="sub" href="#metronome">Metronome</a>
+  <a class="sub" href="#clock-monitor">Clock Monitor</a>
+  <a href="#live-keys">Live Keys</a>
+  <a href="#patches">Patches</a>
+  <a class="sub" href="#sysex-dump">Sysex Dump</a>
+  <a href="#sysex">SysEx reference</a>
+  <a href="#limits">Limits</a>
+  <a href="#troubleshooting">Troubleshooting</a>
+</nav>
+
+<main>
+<section class="hero">
+  <div>
+    <h1>FM-1 MIDI Processor</h1>
+    <p class="lead">Custom firmware that turns the M-VAVE FM-1 synth into a pocket MIDI processor. It filters, remaps and transforms MIDI from its TRS and USB inputs, fires lists of messages from a single trigger, and shows everything on a scrolling MIDI monitor.</p>
+    <div class="chips">
+      <span class="chip">Channel &amp; message filters</span><span class="chip">Note / CC / PC remaps</span>
+      <span class="chip">Channel remaps</span><span class="chip">Event triggers</span><span class="chip">MIDI monitor</span>
+      <span class="chip">Clock lockout</span><span class="chip">Metronome</span><span class="chip">BPM monitor</span><span class="chip">16 patches</span><span class="chip">SysEx dump &amp; load</span>
+    </div>
+    <div class="actions">
+      <a class="btn primary" href="flash.html">Flash the firmware</a>
+      <a class="btn" href="#start">Read the guide</a>
+    </div>
+  </div>
+  <img class="lcd" src="img/screens/midi-monitor.png" width="480" height="480" alt="The MIDI Monitor screen: a list of incoming messages with port, channel, type and data columns.">
+</section>
+
+<p class="note small">The screen pictures on this page are drawn from the firmware's screen designs with its own font and colours. The values in them are examples.</p>
+
+<!-- ===================================================================== -->
+<h2 id="start">Getting started</h2>
+<ol>
+  <li><strong>Install the firmware.</strong> Open <a href="flash.html">Flash firmware</a> in desktop Chrome or Edge, connect the FM-1 by USB and follow the three steps. It takes about a minute.</li>
+  <li><strong>Connect your MIDI.</strong> Plug sources into <strong>TRS MIDI IN</strong> (3.5&nbsp;mm) or send MIDI to the FM-1 over <strong>USB</strong>. Everything that passes the pipeline comes out of <strong>USB MIDI OUT</strong>, to your computer, DAW or USB host.</li>
+  <li><strong>Watch it arrive.</strong> At power-up the FM-1 shows its name and version for 2 seconds, then the <a href="#monitor">MIDI Monitor</a>. Every message that arrives is listed there, coloured by what the pipeline did with it.</li>
+  <li><strong>Build a patch.</strong> Set up <a href="#filters">filters</a>, <a href="#remaps">remaps</a> and <a href="#triggers">triggers</a>; changes apply at once. Save the result to one of 16 <a href="#patches">patches</a> with <kbd>SAVE</kbd>.</li>
+</ol>
+<div class="note small">
+  <strong>Ports.</strong> The firmware names its ports <strong>TRS</strong>, <strong>USB</strong> and <strong>BLE</strong>, or <strong>T</strong>, <strong>U</strong> and <strong>B</strong> where there is room for only one letter. BLE settings can already be edited, but Bluetooth MIDI input isn't connected to the pipeline yet. The only output is USB MIDI OUT.
+</div>
+<p>The FM-1 shows up on the computer as a class-compliant USB MIDI device, so no driver is needed. Windows lets only one program open a MIDI port at a time; close other MIDI software if a program can't see it.</p>
+
+<!-- ===================================================================== -->
+<h2 id="panel">The panel</h2>
+<p>The firmware reuses the FM-1's controls. Highlighted controls do something; the rest are unused for now.</p>
+
+<svg class="diagram" viewBox="0 0 1000 600" role="img" aria-labelledby="panel-title panel-desc">
+  <title id="panel-title">FM-1 control layout</title>
+  <desc id="panel-desc">The encoders SELECT and ALGORITHM, the OCT minus and plus buttons, KNOB 1 to 4, twelve buttons in two rows, and 27 keys: 16 white keys in the lower row for channels 1 to 16 and 11 black keys in the upper row, the last three of which are monitor shortcuts.</desc>
+  <defs>
+    <style>
+      .body{fill:#2a2e30;stroke:#14181a;stroke-width:2}
+      .knob{fill:#15191b;stroke:#4a5256;stroke-width:2}
+      .key{fill:#111;stroke:#3a4246;stroke-width:1.5}
+      .pbtn{fill:#15191b;stroke:#3a4246;stroke-width:1.5}
+      .on{stroke:#4fd1dc;stroke-width:3}
+      .lbl{fill:#c9d2d6;font-size:15px;font-weight:600;text-anchor:middle}
+      .lbl.off{fill:#6b767b;font-weight:400}
+      .ann{fill:#4fd1dc;font-size:14px;font-weight:600}
+      .annline{stroke:#4fd1dc;stroke-width:1.5;fill:none}
+      .white{fill:#e9ecee;stroke:#3a4246;stroke-width:1}
+      .tiny{fill:#9aa5aa;font-size:12px;text-anchor:middle}
+    </style>
+  </defs>
+  <rect class="body" x="20" y="20" width="960" height="560" rx="34"/>
+  <!-- encoders -->
+  <circle class="knob on" cx="110" cy="105" r="22"/><text class="lbl" x="110" y="68">MASTER</text>
+  <circle class="knob on" cx="220" cy="105" r="22"/><text class="lbl" x="220" y="68">SELECT</text>
+  <circle class="knob" cx="110" cy="200" r="22"/><text class="lbl off" x="110" y="163">PRESETS</text>
+  <circle class="knob on" cx="220" cy="200" r="22"/><text class="lbl" x="220" y="163">ALGORITHM</text>
+  <rect class="pbtn on" x="70" y="250" width="70" height="34" rx="6"/><text class="lbl" x="105" y="273">OCT−</text>
+  <rect class="pbtn on" x="160" y="250" width="70" height="34" rx="6"/><text class="lbl" x="195" y="273">OCT+</text>
+  <!-- screen -->
+  <rect x="290" y="55" width="200" height="200" rx="14" fill="#0b0d0e" stroke="#000"/>
+  <image href="img/screens/midi-monitor.png" x="302" y="67" width="176" height="176" preserveAspectRatio="none" style="image-rendering:pixelated"/>
+  <!-- knobs 1-4 -->
+  <g>
+    <circle class="knob on" cx="560" cy="80" r="20"/><text class="lbl" x="560" y="45">KNOB 1</text>
+    <circle class="knob on" cx="660" cy="80" r="20"/><text class="lbl" x="660" y="45">KNOB 2</text>
+    <circle class="knob on" cx="760" cy="80" r="20"/><text class="lbl" x="760" y="45">KNOB 3</text>
+    <circle class="knob on" cx="860" cy="80" r="20"/><text class="lbl" x="860" y="45">KNOB 4</text>
+  </g>
+  <!-- button grid -->
+  <g id="buttons"></g>
+  <!-- keyboard -->
+  <rect x="100" y="330" width="800" height="230" rx="18" fill="#1d2123" stroke="#14181a"/>
+  <g id="keys"></g>
+  <!-- annotations -->
+  <path class="annline" d="M120 548 L120 556 L880 556 L880 548"/>
+</svg>
+<p class="small muted" style="margin-top:-4px">Lower row: the 16 white keys pick MIDI channels 1–16 on most pages. Upper row: on the monitor, the first five black keys (<b>OP1–OP5</b>) are the <a href="#search">search keys</a>, and the last three (<b>C#5</b>, <b>D#5</b>, <b>F#5</b>) are the <a href="#shortcuts">shortcuts</a>. The last two white keys (<b>F5</b>, <b>G5</b>) send the selected message to the <a href="#rule-builder">Rule Builder</a>. On <a href="#live-keys">Live Keys</a> all 27 keys play notes.</p>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>Control</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>HOME</kbd></td><td><a href="#monitor">MIDI Monitor</a></td></tr>
+    <tr><td><kbd>FX</kbd></td><td>The pipeline pages, in pipeline order: <a href="#channel-filter">Channel Filter</a> → <a href="#message-filter">Message Filter</a> → <a href="#message-remap">Message Remap</a> → <a href="#channel-remap">Channel Remap</a>. Press again to move to the next.</td></tr>
+    <tr><td><kbd>SEL</kbd></td><td><a href="#triggers">Event Triggers</a>. From a trigger's sub-pages it goes back one level.</td></tr>
+    <tr><td><kbd>EDIT</kbd></td><td><a href="#knobs">Knobs Config</a> → <a href="#metronome">Metronome</a></td></tr>
+    <tr><td><kbd>SEQ</kbd></td><td><a href="#clock-monitor">Clock Monitor</a></td></tr>
+    <tr><td><kbd>SAVE</kbd></td><td><a href="#patches">Patch Select</a> → <a href="#sysex-dump">Sysex Dump</a></td></tr>
+    <tr><td><kbd>ARP</kbd></td><td><a href="#live-keys">Live Keys</a></td></tr>
+    <tr><td><kbd>GLO</kbd></td><td><a href="#rule-builder">Build Message Rule</a>, from any page. Press again to go back to where you were.</td></tr>
+    <tr><td><kbd>ENV</kbd> <kbd>LFO</kbd></td><td>On Live Keys and Knobs Config: send the note, program change or knob CC to the <a href="#rule-builder">Rule Builder</a>'s IN or OUT.</td></tr>
+    <tr><td>SELECT</td><td>Moves the focus from field to field, or scrolls a list.</td></tr>
+    <tr><td>ALGORITHM</td><td>Changes the focused value.</td></tr>
+    <tr><td><kbd>OCT−</kbd> <kbd>OCT+</kbd></td><td>Step the focused value down or up, or scroll. On Live Keys they shift the octave. Lit on the pages that use them.</td></tr>
+    <tr><td><kbd>PLAY</kbd></td><td>Opens, adds or loads: open a rule or trigger, add a new one, load a patch.</td></tr>
+    <tr><td><kbd>REC</kbd></td><td>Saves, deletes, clears or sends, depending on the page. Anything that loses data needs <a href="#confirm">two presses</a>.</td></tr>
+    <tr><td>KNOB 1–4</td><td>Send a CC each, from any page (<a href="#knobs">Knobs Config</a>).</td></tr>
+    <tr><td>MASTER</td><td>Metronome click volume (<a href="#metronome">Metronome</a>).</td></tr>
+  </tbody>
+</table></div>
+
+<!-- ===================================================================== -->
+<h2 id="conventions">How the pages work</h2>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/add-message-remap-rule.png" width="480" height="480" alt="Add Message Rule screen, showing orange labels and blue values"><figcaption>Labels in orange, values you can change in blue.</figcaption></figure>
+  <div>
+    <ul>
+      <li><strong>Colours.</strong> Labels are <span class="lcd-text" style="color:var(--lcd-orange)">orange</span> and values you can change are <span class="lcd-text" style="color:var(--lcd-blue)">blue</span>. The focused field is inverted: black on blue. Only one field has the focus at a time.</li>
+      <li><strong>Moving and changing.</strong> SELECT moves the focus. ALGORITHM changes the value; <kbd>OCT−</kbd>/<kbd>OCT+</kbd> step it one at a time. Channel fields cycle 16 → 1.</li>
+      <li><strong>Channels from the keys.</strong> On most pages the 16 white keys pick a channel directly. The key for the current channel is lit.</li>
+      <li><strong>Page buttons.</strong> Every button that opens a page is lit, on every page: <kbd>HOME</kbd>, <kbd>EDIT</kbd>, <kbd>FX</kbd>, <kbd>SEL</kbd>, <kbd>SAVE</kbd> and <kbd>ARP</kbd>. Pressing one again cycles through its pages. The first press from another group always opens the group's first page.</li>
+      <li><strong>Changes apply at once</strong> to the patch in use, so you can hear the effect while you edit. Save to a patch slot to keep them (<a href="#patches">Patches</a>). The rule pages are the exception: a rule is only added when you save it with <kbd>REC</kbd>.</li>
+    </ul>
+    <p id="confirm"><strong>Two-press confirmation.</strong> <kbd>REC</kbd> actions that lose data (clear, delete, save) need a second press. After the first press the REC LED flashes quickly; press it again within 5 seconds to confirm. Any other control cancels.</p>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="flow">The MIDI pipeline</h2>
+<p>Every message from TRS or USB goes through the same stages, in this order. Each stage is set per patch.</p>
+<svg class="diagram" viewBox="0 0 1000 230" role="img" aria-labelledby="flow-title flow-desc">
+  <title id="flow-title">Pipeline</title>
+  <desc id="flow-desc">TRS and USB input go to the Channel Filter, then the Message Filter. Event triggers watch the messages there. Messages continue to Message Remap, then Channel Remap, then USB MIDI OUT. Trigger messages and knob CCs go straight to USB MIDI OUT.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker>
+    <style>
+      .fbox{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+      .fbox.hl{stroke:var(--accent);stroke-width:2}
+      .ft{fill:var(--text);font-size:15px;font-weight:600;text-anchor:middle}
+      .fs{fill:var(--dim);font-size:12px;text-anchor:middle}
+      .fl{stroke:var(--dim);stroke-width:1.6;fill:none;color:var(--dim)}
+      .fl.acc{stroke:var(--accent);color:var(--accent);stroke-dasharray:5 4}
+    </style>
+  </defs>
+  <rect class="fbox" x="10" y="40" width="110" height="60" rx="8"/><text class="ft" x="65" y="66">TRS / USB</text><text class="fs" x="65" y="85">MIDI IN</text>
+  <rect class="fbox" x="150" y="40" width="130" height="60" rx="8"/><text class="ft" x="215" y="66">Channel</text><text class="fs" x="215" y="85">Filter</text>
+  <rect class="fbox" x="310" y="40" width="130" height="60" rx="8"/><text class="ft" x="375" y="66">Message</text><text class="fs" x="375" y="85">Filter</text>
+  <rect class="fbox" x="490" y="40" width="130" height="60" rx="8"/><text class="ft" x="555" y="66">Message</text><text class="fs" x="555" y="85">Remap</text>
+  <rect class="fbox" x="650" y="40" width="130" height="60" rx="8"/><text class="ft" x="715" y="66">Channel</text><text class="fs" x="715" y="85">Remap</text>
+  <rect class="fbox hl" x="840" y="40" width="150" height="60" rx="8"/><text class="ft" x="915" y="66">USB MIDI</text><text class="fs" x="915" y="85">OUT</text>
+  <path class="fl" d="M120 70 H146" marker-end="url(#arr)"/><path class="fl" d="M280 70 H306" marker-end="url(#arr)"/>
+  <path class="fl" d="M440 70 H486" marker-end="url(#arr)"/><path class="fl" d="M620 70 H646" marker-end="url(#arr)"/>
+  <path class="fl" d="M780 70 H836" marker-end="url(#arr)"/>
+  <circle cx="465" cy="70" r="5" fill="var(--accent)"/>
+  <path class="fl acc" d="M465 75 V160" />
+  <rect class="fbox hl" x="400" y="160" width="130" height="56" rx="8"/><text class="ft" x="465" y="184">Event</text><text class="fs" x="465" y="202">Triggers</text>
+  <path class="fl acc" d="M530 188 H915 V104" marker-end="url(#arr)"/>
+  <text class="fs" x="720" y="180">trigger messages: not filtered or remapped</text>
+  <text class="fs" x="215" y="126">blocked → grey</text>
+  <text class="fs" x="375" y="126">blocked → grey</text>
+  <text class="fs" x="635" y="126">remapped → dark yellow</text>
+  <text class="fs" x="300" y="200" style="text-anchor:end">fired a trigger → teal</text>
+</svg>
+<ul>
+  <li><strong>Filters</strong> drop messages: first by channel, then by type.</li>
+  <li><strong>Event triggers</strong> watch what passes the filters, before any remap. When one fires, its messages go straight to the output, after the message that fired it.</li>
+  <li><strong>Message Remap</strong> changes note, CC or program numbers and can move them to another channel. <strong>Channel Remap</strong> then moves whole channels, including the output of a message rule.</li>
+  <li><strong>Knob CCs</strong> and <strong>Live Keys</strong> notes go straight to the output too.</li>
+  <li><strong>MIDI clock</strong> from more than one input is never merged: one input owns it (<a href="#clock">MIDI clock</a>).</li>
+  <li>Active Sensing (FE) and the undefined system messages F4, F5, F9 and FD are dropped on arrival: never shown, never passed on.</li>
+  <li>SysEx up to 128 bytes is passed on in order with other messages. Longer SysEx is shown in the monitor but not passed on.</li>
+</ul>
+
+<!-- ===================================================================== -->
+<h2 id="monitor">MIDI Monitor <kbd>HOME</kbd></h2>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/midi-monitor.png" width="480" height="480" alt="MIDI Monitor screen"><figcaption>The bottom row shown is the selected one.</figcaption></figure>
+  <div>
+    <p>The start-up page. It lists the last 100 messages received on any input, as they arrived and before the pipeline. The newest is at the bottom.</p>
+    <p>Columns: <b>P</b> port (T, U, B), <b>CH</b> channel, <b>TYP</b> type, then data 1 and data 2. Notes are shown by name with 60 = C4. Pitch bend is one signed value (−8192 to +8191), and SysEx is shown as its length, e.g. <code>SYX 6B</code>.</p>
+    <p>Row colours show what the pipeline did:</p>
+    <ul>
+      <li><span class="swatch" style="background:#e8e8e8"></span>White: passed unchanged.</li>
+      <li><span class="swatch" style="background:var(--lcd-grey)"></span>Dark grey: blocked by a filter.</li>
+      <li><span class="swatch" style="background:var(--lcd-yellow)"></span>Dark yellow: changed by a remap rule.</li>
+      <li><span class="swatch" style="background:var(--lcd-teal)"></span>Teal: fired an event trigger (wins over yellow).</li>
+    </ul>
+    <p>MIDI clock isn't listed. Instead <span class="lcd-text" style="color:#00e000">CLK</span> in the title blinks with the beat while clock arrives.</p>
+  </div>
+</div>
+<table class="controls">
+  <thead><tr><th>Control</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td>SELECT, <kbd>OCT−</kbd>/<kbd>OCT+</kbd></td><td>Scroll back through the history (OCT− goes back, OCT+ forward). While scrolled back, the view stays put as new messages arrive, and the amber number at the top right shows how many rows back you are.</td></tr>
+    <tr><td><kbd>REC</kbd></td><td>Clear the list (two presses). REC is lit on this page.</td></tr>
+    <tr><td>C#5, D#5, F#5, F5, G5</td><td>Shortcuts that build a rule or trigger from the selected message (below).</td></tr>
+  </tbody>
+</table>
+<div class="table-wrap"><table>
+  <thead><tr><th>Shown as</th><th>Message</th><th>Shown as</th><th>Message</th></tr></thead>
+  <tbody>
+    <tr><td><code>NON</code></td><td>Note On</td><td><code>SYX</code></td><td>System Exclusive (length in bytes)</td></tr>
+    <tr><td><code>NOF</code></td><td>Note Off, or Note On with velocity 0</td><td><code>MTC</code></td><td>MIDI Time Code quarter frame</td></tr>
+    <tr><td><code>PAT</code></td><td>Polyphonic aftertouch</td><td><code>SPP</code></td><td>Song Position Pointer</td></tr>
+    <tr><td><code>CC</code></td><td>Control Change</td><td><code>SS</code></td><td>Song Select</td></tr>
+    <tr><td><code>PC</code></td><td>Program Change</td><td><code>TR</code></td><td>Tune Request</td></tr>
+    <tr><td><code>CAT</code></td><td>Channel aftertouch</td><td><code>STA</code> <code>CON</code> <code>STP</code></td><td>Start, Continue, Stop</td></tr>
+    <tr><td><code>PB</code></td><td>Pitch bend</td><td><code>RST</code></td><td>System Reset</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="shortcuts">Shortcuts: make a rule from a message</h3>
+<p>Scroll so the message you want is the bottom row, then press one of the last three black keys, or one of the last two white keys. Each key is lit only when it applies to the selected message.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Key</th><th>Makes</th><th>Works for</th><th>What happens</th></tr></thead>
+  <tbody>
+    <tr><td><b>C#5</b></td><td>Message rule</td><td>Notes, CC, PC</td><td>Opens Add Message Rule with the message's port, channel, type and value filled in, and the output set to the same value. If a rule for that value already exists, it opens that rule. Nothing changes until you save with <kbd>REC</kbd>.</td></tr>
+    <tr><td><b>D#5</b></td><td>Channel rule</td><td>Any channel message</td><td>Opens Add Channel Rule with the message's port and channel, output set to the same channel, or the existing rule for that channel.</td></tr>
+    <tr><td><b>F5</b></td><td>Rule Builder IN</td><td>Notes, CC, PC</td><td>Puts the message's port, channel, type and value into the <a href="#rule-builder">Rule Builder</a>'s IN and opens it.</td></tr>
+    <tr><td><b>G5</b></td><td>Rule Builder OUT</td><td>Notes, CC, PC</td><td>Puts the message's channel and value into the Rule Builder's OUT and opens it.</td></tr>
+    <tr><td><b>F#5</b></td><td>Trigger</td><td>NON, NOF, CC, PC</td><td>Adds a trigger at once and opens it: D1 is the message's value, D2 is 0–127 (1–127 for Note On), Pass Input YES, Fire ENTER. Then add its messages with <kbd>PLAY</kbd>.</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="search">Search: show only some messages</h3>
+<p>The first five black keys, printed <b>OP1–OP5</b> on the panel, search the monitor. A search only hides rows on screen. MIDI is never affected, and every message is still recorded, so turning a search off brings everything back.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Key</th><th>Searches by</th><th>Settings</th></tr></thead>
+  <tbody>
+    <tr><td><b>OP1</b> (F#3)</td><td>Port</td><td>TRS, USB, BLE: each INC (show) or EXC (hide)</td></tr>
+    <tr><td><b>OP2</b> (G#3)</td><td>Channel</td><td>1–16, each INC or EXC. The white keys toggle channels.</td></tr>
+    <tr><td><b>OP3</b> (A#3)</td><td>Message type</td><td>Each of the 16 types INC or EXC</td></tr>
+    <tr><td><b>OP4</b> (C#4)</td><td>Data 1</td><td>FROM–TO range; INC shows only values inside it, EXC hides them</td></tr>
+    <tr><td><b>OP5</b> (D#4)</td><td>Data 2</td><td>The same, for data 2</td></tr>
+  </tbody>
+</table></div>
+<ul>
+  <li><b>Short press</b> a key to turn its search on or off. Its key LED is lit while it's on, and <span class="lcd-text" style="color:var(--lcd-amber)">SRCH</span> shows in the monitor's title.</li>
+  <li><b>Hold</b> a key (a little under a second) to open its search page. Holding another OP key switches pages, and <kbd>HOME</kbd> goes back to the monitor. On a search page, SELECT moves between fields, ALGORITHM and OCT± change them, and STATE turns the search on or off.</li>
+  <li>Searches add up: with USB and channel 10 both selected, you see only USB channel 10.</li>
+  <li>System messages have no channel, so the channel search lets them through; hide them with the type search. A message without data 1 or data 2 counts as outside the range, so "D1 060–060 INC" shows only messages whose data 1 is 60.</li>
+  <li>Scrolling, the selected row and the <a href="#shortcuts">shortcuts</a> use only the shown rows. <code>NO MATCHES</code> means nothing in the last 100 messages passes.</li>
+  <li>Searches aren't saved; they start off at power-up.</li>
+</ul>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/search-type.png" width="480" height="480" alt="Search Type page: each message type set to INC or EXC"><figcaption>OP3, the type search.</figcaption></figure>
+  <figure><img class="lcd" src="img/screens/search-d1.png" width="480" height="480" alt="Search D1 page: FROM, TO and MODE"><figcaption>OP4, the data 1 range, with note names.</figcaption></figure>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="filters">Filters <kbd>FX</kbd></h2>
+<p>Both filter pages edit one input port at a time, chosen in <b>IN PORT</b>. The port you pick is shared between the two pages. By default everything passes.</p>
+
+<h3 id="channel-filter">Channel Filter</h3>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/channel-filter.png" width="480" height="480" alt="Channel Filter screen with OK or NO for channels 1 to 16"></figure>
+  <div>
+    <p>Choose which of the 16 channels pass from the selected port. <b>OK</b> passes, <b>NO</b> blocks.</p>
+    <ul>
+      <li>The 16 white keys toggle their channel from any field, and are lit while their channel passes. This is the quickest way to use the page.</li>
+      <li>SELECT moves through IN PORT and channels 1–16; ALGORITHM or OCT± flip the focused one.</li>
+    </ul>
+  </div>
+</div>
+
+<h3 id="message-filter">Message Filter</h3>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/message-filter.png" width="480" height="480" alt="Message Filter screen with system and channel message types"></figure>
+  <div>
+    <p>Choose which message types pass. The top block is <b>system messages</b>, set per port: SYX, MTC, SPP, STA, CON, SS, TR, RST, STP and TCK (clock). The bottom block is <b>channel messages</b>, set per port <em>and</em> per channel: NON, NOF, CC, PC, PAT, CAT and PB.</p>
+    <ul>
+      <li><b>EFFECTIVE CH</b> picks which channel the bottom block shows. The white keys set it from any field; its key is lit.</li>
+      <li>SELECT moves down each column in turn; ALGORITHM or OCT± flip OK/NO.</li>
+      <li>Note On with velocity 0 counts as Note Off (NOF).</li>
+      <li>The FM-1's own patch SysEx always gets through, whatever SYX is set to.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="remaps">Remaps <kbd>FX</kbd></h2>
+<p>Remap rules change messages that pass the filters. Message rules run first, then channel rules, so a message rule's output channel can be remapped again.</p>
+
+<h3 id="message-remap">Message Remap</h3>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/message-remap-list.png" width="480" height="480" alt="Message Remap list: input value, output value and channel"></figure>
+  <div>
+    <p>A message rule changes data 1 (the note, CC or program number) and sets the output channel. Rules are listed per input <b>P</b>ort, <b>CH</b>annel and <b>TYP</b>e, shown in the header. Each row is <code>INP -&gt; MAP TO CH</code>.</p>
+    <ul>
+      <li><b>TYP</b> is NOTE, CC or PC. A NOTE rule applies to Note On, Note Off and poly aftertouch for that note, so a remapped note is always released.</li>
+      <li>SELECT steps P → CH → TYP → the rules → <b>+ NEW RULE</b>. ALGORITHM and OCT± change the header field, or scroll the rules. The white keys set CH.</li>
+      <li><kbd>PLAY</kbd> on a rule opens it; on + NEW RULE (or the header) adds one.</li>
+      <li><kbd>REC</kbd> deletes the selected rule (two presses).</li>
+      <li>Up to 32 rules per list, 256 in a patch.</li>
+    </ul>
+  </div>
+</div>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/add-message-remap-rule.png" width="480" height="480" alt="Add Message Rule: input value, output value, output channel"></figure>
+  <div>
+    <p><b>Add Message Rule</b> sets the <b>INPUT VALUE</b>, <b>OUTPUT VALUE</b> and <b>OUT MIDI CHANNEL</b>. Port, channel and type come from the list and are shown in white. For notes, the note names are shown under the values.</p>
+    <ul>
+      <li>The white keys set the output channel.</li>
+      <li><kbd>REC</kbd> twice saves the rule and returns to the list. If a rule for that input already exists, <span class="lcd-text" style="color:var(--lcd-amber)">REPLACES A RULE</span> warns you first.</li>
+      <li><kbd>FX</kbd> returns to the list without saving.</li>
+    </ul>
+  </div>
+</div>
+
+<h3 id="channel-remap">Channel Remap</h3>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/channel-remap-list.png" width="480" height="480" alt="Channel Remap list: source port, channel and output channel"></figure>
+  <div>
+    <p>A channel rule moves everything from one port's channel to another channel. Up to 32 rules.</p>
+    <ul>
+      <li>SELECT, ALGORITHM and OCT± move through the list.</li>
+      <li><kbd>PLAY</kbd> opens the selected rule, or adds one from + NEW RULE.</li>
+      <li><kbd>REC</kbd> deletes the selected rule (two presses).</li>
+    </ul>
+  </div>
+</div>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/add-ch-remap-rule.png" width="480" height="480" alt="Add Channel Rule: input port, input channel, output channel"></figure>
+  <div>
+    <p><b>Add Channel Rule</b> sets INPUT PORT, INPUT CHANNEL and OUTPUT CHANNEL. The white keys set the focused channel. <kbd>REC</kbd> twice saves; <kbd>FX</kbd> returns without saving.</p>
+  </div>
+</div>
+
+<h3 id="rule-builder">Rule Builder <kbd>GLO</kbd></h3>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/build-message-rule.png" width="480" height="480" alt="Build Message Rule: IN port, channel, type and value; OUT channel and value"><figcaption>IN from one message, OUT from another.</figcaption></figure>
+  <div>
+    <p><b>Build Message Rule</b> is a scratchpad for message rules: take the input from one message and the output from another, then save. For example, to turn the note your keyboard sends into the note your drum machine wants:</p>
+    <ol>
+      <li>On the monitor, select the incoming note and press <b>F5</b> (IN).</li>
+      <li>Press <kbd>GLO</kbd> to go back, select the note you want and press <b>G5</b> (OUT). Or go to <a href="#live-keys">Live Keys</a>, play it, and press <kbd>LFO</kbd>.</li>
+      <li>Press <kbd>REC</kbd> twice. The rule is added to its <a href="#message-remap">Message Remap</a> list and the scratchpad clears.</li>
+    </ol>
+    <ul>
+      <li><kbd>GLO</kbd> opens the page from anywhere, and pressing it again returns to the page you came from. The monitor keeps the same row selected.</li>
+      <li><b>F5</b>/<b>G5</b> on the monitor, and <kbd>ENV</kbd>/<kbd>LFO</kbd> on Live Keys and Knobs Config, fill IN/OUT. Live Keys gives the last note or program change it sent; Knobs Config gives the focused knob's CC. Their port is USB; change it on the page if needed.</li>
+      <li>IN and OUT must be the same kind of message: a rule changes a note number, a CC number or a program, but can't turn one into another. <code>TYPE MISMATCH</code> in red means REC won't save.</li>
+      <li>Every field can be edited with SELECT, ALGORITHM and OCT±, and the white keys set the focused channel. An empty half (<code>---</code>) starts at USB, channel 1, note 60.</li>
+      <li>A rule for the same input is replaced (<code>REPLACES A RULE</code>). A full list shows <code>LIST FULL (32)</code>.</li>
+      <li>The scratchpad isn't part of a patch. It survives page changes and patch loads, and clears at power-off. Save the patch to keep the rules you add.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="triggers">Event Triggers <kbd>SEL</kbd></h2>
+<p>An event trigger watches for one kind of message and, when it arrives, sends a list of other messages. Example: a foot controller sends Program Change 5, and the FM-1 sends bank select and program changes to every synth in a rack.</p>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/event-triggers.png" width="480" height="480" alt="Event Triggers list"></figure>
+  <div>
+    <p>The list shows each trigger's port, channel, type, D1 range and number of messages (<b>#</b>). Triggers fire in list order. The footer counts triggers and messages in the patch.</p>
+    <ul>
+      <li>SELECT, ALGORITHM and OCT± move the selection.</li>
+      <li><kbd>PLAY</kbd> opens the selected trigger; on <b>+ NEW TRIGGER</b> it adds one (USB, channel 1, PC 0–127) and opens it.</li>
+      <li><kbd>REC</kbd> deletes the selected trigger (two presses).</li>
+      <li>A message count in red means triggers above it could use up the 64-message limit, so some of its messages may not be sent.</li>
+    </ul>
+    <p><strong>Edits apply at once</strong>; there is no save step for triggers. A half-edited trigger fires while you work on it. Save the patch to keep them.</p>
+  </div>
+</div>
+
+<h3>How a trigger matches</h3>
+<ul>
+  <li>Port and channel are equal, and the type matches: <b>NON</b> (Note On, velocity 1–127), <b>NOF</b> (Note Off, or Note On velocity 0), <b>CC</b> or <b>PC</b>.</li>
+  <li>Data 1 (note, CC or program number) is inside the <b>D1</b> range, and data 2 (velocity or CC value) is inside the <b>D2</b> range. PC has no data 2.</li>
+  <li>Triggers see messages after the filters and before the remaps, so a blocked message never fires one. They match the values the monitor shows.</li>
+  <li>Several triggers can match one message; all of them fire, in list order. One input message sends at most 64 trigger messages.</li>
+  <li>Trigger messages go straight to the output. They aren't filtered or remapped and can't fire other triggers, so there are no loops.</li>
+</ul>
+
+<h3 id="edit-trigger">Edit Trigger</h3>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/edit-trigger.png" width="480" height="480" alt="Edit Trigger page"></figure>
+  <div>
+    <table class="controls">
+      <tbody>
+        <tr><td>PORT, CH</td><td>Input port and channel. The white keys set CH.</td></tr>
+        <tr><td>TYPE</td><td>NON, NOF, CC or PC.</td></tr>
+        <tr><td>D1 FROM / TO</td><td>Range of note, CC or program numbers. For notes, the names are shown underneath.</td></tr>
+        <tr><td>D2 FROM / TO</td><td>Range of velocities or CC values. Shown as <code>---</code> for PC.</td></tr>
+        <tr><td>PASS INPUT</td><td><b>YES</b>: the triggering message also continues through the remaps to the output. <b>NO</b>: it is swallowed when the trigger fires.</td></tr>
+        <tr><td>FIRE</td><td><b>ENTER</b>: fire once when a CC value moves into the D2 range, and again only after it has left. <b>EVERY</b>: fire on every matching message. For notes and PC they behave the same.</td></tr>
+      </tbody>
+    </table>
+    <p>FROM can't pass TO: raising FROM pushes TO up and vice versa. <kbd>PLAY</kbd> opens the trigger's messages. <kbd>REC</kbd> sends them now as a test, without the foot controller. <kbd>SEL</kbd> goes back to the list.</p>
+  </div>
+</div>
+<p class="note small"><b>ENTER and expression pedals.</b> With a pedal on CC 11 and a D2 range of 100–127, EVERY fires on each value as the pedal moves through the range, perhaps 30 times in one press. ENTER fires once as it crosses into the range.</p>
+
+<h3 id="trigger-messages">Trigger Messages</h3>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/trigger-messages.png" width="480" height="480" alt="Trigger Messages list"></figure>
+  <div>
+    <p>The messages this trigger sends, top to bottom. Each row has a type (NON, NOF, CC, PC), channel, D1 and D2. Up to 32 messages per trigger and 256 in a patch.</p>
+    <ul>
+      <li>SELECT moves cell by cell: TYP → CH → D1 → D2, row by row, then + ADD MESSAGE.</li>
+      <li>ALGORITHM and OCT± change the cell. D1 and D2 can also be <b>IN</b>: copy that value from the message that fired the trigger. For example, a NON row with D2 = IN passes the played velocity on.</li>
+      <li><kbd>PLAY</kbd> inserts a copy of the row below it; on + ADD MESSAGE it adds CC 0 on channel 1.</li>
+      <li><kbd>REC</kbd> deletes the row (two presses). <kbd>SEL</kbd> goes back to Edit Trigger.</li>
+      <li><span class="lcd-text" style="color:var(--lcd-amber)">NON WITHOUT NOF</span> warns that the list has more Note Ons than Note Offs, which can leave notes hanging.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="knobs">Knobs Config <kbd>EDIT</kbd></h2>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/knobs-config.png" width="480" height="480" alt="Knobs Config: channel and CC number for each knob"></figure>
+  <div>
+    <p>KNOB 1–4 each send a CC, from any page. Here you set each knob's channel and CC number (0–119). Defaults: channel 1, CC 20–23.</p>
+    <ul>
+      <li>Each knob keeps a value from 0 to 127 and sends it as an absolute CC whenever you turn it. Values start at 0 at power-up and aren't stored.</li>
+      <li>The current value is shown as a bar under each knob's fields.</li>
+      <li>Knob CCs go straight to the output, not through the pipeline.</li>
+      <li>SELECT moves through the 8 fields; ALGORITHM and OCT± change them. On a channel field the white keys pick the channel.</li>
+      <li><kbd>ENV</kbd>/<kbd>LFO</kbd> send the focused knob's CC to the <a href="#rule-builder">Rule Builder</a>'s IN/OUT.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="clock">MIDI clock</h2>
+<p>If more than one input sends MIDI clock, the FM-1 never merges them. <strong>One input owns the clock</strong>, and clock messages from the others are dropped. This is always on, and it happens after the filters.</p>
+<ul>
+  <li><b>Taking control:</b> the first input to send START (or CONTINUE) takes the lock. While it holds it, START, STOP, CONTINUE, clock ticks and Song Position from every other input are dropped.</li>
+  <li><b>Letting go:</b> STOP from the owner releases the lock, and any input can then take over with START or CONTINUE. Until one does, the old owner's ticks keep passing. Many devices send clock even while stopped.</li>
+  <li><b>Before anyone presses START,</b> the first input to send any clock message is the owner.</li>
+  <li><b>Unplugged sources:</b> if the owner sends nothing for 2 seconds, it's forgotten and the next input to send clock takes over.</li>
+  <li>Dropped START, STOP and CONTINUE messages show dark grey in the monitor. The monitor's <span class="lcd-text" style="color:#00e000">CLK</span> blinks with the owner's clock only.</li>
+  <li>The Message Filter still applies first: a port with STA set to NO can never take control.</li>
+</ul>
+
+<h3 id="metronome">Metronome <kbd>EDIT</kbd></h3>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/metronome.png" width="480" height="480" alt="Metronome: enabled, time base, beats per bar, click and first-beat frequencies, volume"><figcaption>Press EDIT twice: Knobs Config, then Metronome.</figcaption></figure>
+  <div>
+    <p>A click on the headphone/line output that follows the incoming clock. It plays from every page while it's enabled and the clock is running, from START or CONTINUE until STOP.</p>
+    <table class="controls">
+      <tbody>
+        <tr><td>ENABLED</td><td>ON or OFF. <kbd>REC</kbd> also toggles it from any field, as a quick mute; REC is lit while it's on.</td></tr>
+        <tr><td>TIME BASE</td><td>One click per 1/4, 1/8, 1/16 or 1/32 note.</td></tr>
+        <tr><td>BEATS/BAR</td><td>Clicks per bar (1–16). The first click of each bar uses the 1ST BEAT tone. For 4/4 in eighths, use 1/8 with 8 beats.</td></tr>
+        <tr><td>CLICK FREQ</td><td>Tone of the other clicks, 200–4000 Hz. ALGORITHM steps 10 Hz, OCT± 100 Hz.</td></tr>
+        <tr><td>1ST BEAT</td><td>Tone of the first beat of each bar.</td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li><b>Volume is the MASTER knob.</b> MASTER only sets the click volume. Audio passing through from USB or Bluetooth plays at the computer's or phone's own volume.</li>
+      <li>The click isn't sent back to the computer over USB audio, so it won't end up in recordings.</li>
+      <li>START counts from bar 1, beat 1. CONTINUE carries on, or starts from the Song Position your DAW sent, so the accent stays on the downbeat.</li>
+      <li>Metronome settings belong to the FM-1, not to a patch, so changing patches doesn't change the click. They're saved when you leave the page.</li>
+    </ul>
+  </div>
+</div>
+
+<h3 id="clock-monitor">Clock Monitor <kbd>SEQ</kbd></h3>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/clock-monitor.png" width="480" height="480" alt="Clock Monitor: source, state, BPM and elapsed time"></figure>
+  <div>
+    <p>A read-only view of the clock, readable from across the room.</p>
+    <ul>
+      <li><b>SOURCE:</b> the input that owns the clock: TRS, USB, BLE, or NONE.</li>
+      <li><b>STATE:</b> <span class="lcd-text" style="color:#00e000">RUN</span> from START or CONTINUE, STOP after STOP.</li>
+      <li><b>BPM:</b> measured from the clock, to one decimal, averaged over the last two beats. It shows <code>---.-</code> when no clock has arrived for a second. It is only measured while this page is open.</li>
+      <li><b>ELAPSED:</b> hours, minutes and seconds since the last START. It pauses on STOP and carries on with CONTINUE.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="live-keys">Live Keys <kbd>ARP</kbd></h2>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/live-keys.png" width="480" height="480" alt="Live Keys: channel, velocity range, octave, program change and bank select"></figure>
+  <div>
+    <p>On this page the 27 keys play notes on the chosen channel, straight to the output. Each note gets a random velocity between <b>MIN</b> and <b>MAX</b>, for a more human feel.</p>
+    <ul>
+      <li><kbd>OCT−</kbd>/<kbd>OCT+</kbd> shift the keys by an octave (−3 to +3). At octave 0 the lowest key is F3.</li>
+      <li><b>PROGRAM CHANGE</b> (1–128) and <b>BANK SELECT</b> MSB/LSB (or OFF): <kbd>REC</kbd> sends the bank select, then the program change.</li>
+      <li>Leaving the page releases any keys still held.</li>
+      <li><kbd>ENV</kbd>/<kbd>LFO</kbd> send the last note played, or the last program change sent, to the <a href="#rule-builder">Rule Builder</a>'s IN/OUT. They light up once there's something to send.</li>
+      <li>Defaults: channel 1, velocity 100–127, octave 0, program 1, bank OFF.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="patches">Patches <kbd>SAVE</kbd></h2>
+<p>A patch holds everything you set up: name, filters, remap rules, event triggers, knob channels and CCs, and Live Keys settings. There are 16 patch slots. The patch you're editing is the <b>edit buffer</b>; changes go there at once, and stay until you load another patch or switch off. At power-up the FM-1 loads the last patch you loaded or saved.</p>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/patch-select.png" width="480" height="480" alt="Patch Select: patch number and name"></figure>
+  <div>
+    <ul>
+      <li><b>PATCH NUMBER</b> is the slot that PLAY and REC act on. The white keys pick 1–16. Browsing numbers loads nothing; the page shows what's <b>STORED</b> in that slot and what's <b>IN USE</b>.</li>
+      <li><b>NAME</b>: up to 12 characters. SELECT moves the cursor through the name; ALGORITHM picks each character (A–Z, 0–9, dash, space).</li>
+      <li><kbd>PLAY</kbd> loads the slot at once; unsaved changes are dropped. An empty slot loads the defaults.</li>
+      <li><kbd>REC</kbd> twice saves the edit buffer into the slot.</li>
+      <li>A <code>*</code> in the title means unsaved changes. After a load or save, the status line shows how long Flash took. MIDI pauses for that time.</li>
+    </ul>
+  </div>
+</div>
+
+<h3 id="sysex-dump">Sysex Dump</h3>
+<div class="page">
+  <figure><img class="lcd" src="img/screens/sysex-dump.png" width="480" height="480" alt="Sysex Dump: patch number, allow dump request, device ID"></figure>
+  <div>
+    <p>Back up patches to a computer, or let an editor or librarian read and write them.</p>
+    <ul>
+      <li><b>PATCH NUMBER</b> (1–16 or ALL) picks what to send; <kbd>REC</kbd> sends it to USB MIDI OUT at once. Stored patches are sent, not unsaved edits.</li>
+      <li><b>ALLOW DUMP REQ</b>: whether the FM-1 answers dump requests.</li>
+      <li><b>DEVICE ID</b> (0–127): the FM-1 only answers SysEx with this exact ID.</li>
+      <li>Received dumps overwrite without asking. The page counts patches received, rejected and requests answered: handy when testing an editor.</li>
+    </ul>
+    <p>To restore a backup, send the saved <code>.syx</code> back to the FM-1 with any SysEx tool. <code>tools/patch_sysex.py</code> in the repository does both directions.</p>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="sysex">SysEx reference</h2>
+<p>All patch messages use this header. <code>7D</code> is the manufacturer ID reserved for non-commercial use.</p>
+<pre><code>F0 7D &lt;device id&gt; 11 &lt;command&gt; &lt;data…&gt; F7</code></pre>
+<div class="table-wrap"><table>
+  <thead><tr><th>Command</th><th>Meaning</th><th>Data</th></tr></thead>
+  <tbody>
+    <tr><td><code>00</code></td><td>Single patch dump</td><td>One or more dump packets</td></tr>
+    <tr><td><code>01</code></td><td>All patch dump</td><td>Packets for patches 0–15, in order</td></tr>
+    <tr><td><code>10</code></td><td>Single patch request</td><td>Patch number 0–15, or <code>7F</code> for the edit buffer</td></tr>
+    <tr><td><code>11</code></td><td>All patch request</td><td>none</td></tr>
+  </tbody>
+</table></div>
+<ul>
+  <li>Patches are numbered 0–15 in SysEx (1–16 on screen). <b><code>7F</code> is the edit buffer</b>: a dump to <code>7F</code> replaces the patch in use without writing Flash, which is ideal for auditioning from an editor.</li>
+  <li>A patch is sent as 1–32 packets: <code>patch, index, count, payload…, checksum</code>. The payload is up to 98 patch bytes, 7-bit packed (each group of 7 bytes is preceded by a byte holding their top bits). The checksum makes the packet bytes sum to a multiple of 128.</li>
+  <li>A missing, repeated or bad packet discards that patch; nothing partial is applied. Requests are only answered when Allow Dump Request is YES.</li>
+</ul>
+<p class="small muted">The full byte layout of a patch is in <code>design/patch-format.md</code> in the repository.</p>
+<p>Examples, with device ID 0:</p>
+<pre><code>F0 7D 00 11 10 7F F7     request the edit buffer
+F0 7D 00 11 10 02 F7     request patch 3
+F0 7D 00 11 11 F7        request all 16 patches</code></pre>
+
+<!-- ===================================================================== -->
+<h2 id="limits">Limits</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Item</th><th>Limit</th></tr></thead>
+  <tbody>
+    <tr><td>Patches</td><td>16</td></tr>
+    <tr><td>Message rules</td><td>32 per port/channel/type list, 256 per patch</td></tr>
+    <tr><td>Channel rules</td><td>32 per patch</td></tr>
+    <tr><td>Event triggers</td><td>32 per patch</td></tr>
+    <tr><td>Trigger messages</td><td>32 per trigger, 256 per patch, 64 sent per input message</td></tr>
+    <tr><td>Monitor history</td><td>100 messages</td></tr>
+    <tr><td>SysEx passed through</td><td>up to 128 bytes per message</td></tr>
+  </tbody>
+</table></div>
+
+<!-- ===================================================================== -->
+<h2 id="troubleshooting">Troubleshooting</h2>
+<dl>
+  <dt><b>Nothing comes out of USB.</b></dt>
+  <dd>Check the monitor. Grey rows were blocked by a filter: look at Channel Filter and Message Filter for that port. If nothing appears at all, the message isn't reaching the FM-1.</dd>
+  <dt><b>A note gets stuck.</b></dt>
+  <dd>A trigger that sends Note On without a matching Note Off leaves it hanging; Trigger Messages warns with NON WITHOUT NOF. Message rules always remap Note Off with its Note On, so they don't cause this.</dd>
+  <dt><b>A trigger fires too often from a pedal.</b></dt>
+  <dd>Set FIRE to ENTER so it fires once per entry into the D2 range.</dd>
+  <dt><b>The flash page can't find the FM-1.</b></dt>
+  <dd>Use desktop Chrome or Edge, allow MIDI device control, close every other program using the FM-1's MIDI port, and use a data-capable USB cable. If an update was interrupted, reconnect and press Install again; it resumes from the loader.</dd>
+  <dt><b>No metronome click.</b></dt>
+  <dd>Check that ENABLED is ON, MASTER is turned up, and the clock is running: the Clock Monitor should show RUN. The click only plays between START (or CONTINUE) and STOP.</dd>
+  <dt><b>Clock from my second device is ignored.</b></dt>
+  <dd>Another input owns the clock. Send STOP from the owner, then START from the device you want; or unplug the owner and wait 2 seconds.</dd>
+  <dt><b>Headphone audio from the computer is too loud or quiet.</b></dt>
+  <dd>MASTER now only sets the metronome. Set pass-through audio with the computer's or phone's volume.</dd>
+  <dt><b>The Rule Builder says TYPE MISMATCH.</b></dt>
+  <dd>IN and OUT came from different kinds of message, such as a note and a CC. Rules can't change the message type; set OUT from a message of the same kind.</dd>
+  <dt><b>My edits disappeared.</b></dt>
+  <dd>Edits live in the edit buffer until saved. Loading a patch, receiving a dump for the patch in use, or switching off drops them. Look for the <code>*</code> on Patch Select.</dd>
+</dl>
+
+<p class="small muted" style="margin-top:3em">FM-1 MIDI Processor is unofficial firmware, based on the FM1 Open SDK, and isn't made or supported by M-VAVE. Use it at your own risk.</p>
+</main>
+</div>
+
+<script>
+// Panel drawing: the button grid and the 27 keys.
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text) e.textContent = text; return e; };
+  const btns = document.getElementById('buttons');
+  const rows = [['FX', 'SEL', 'ENV', 'LFO', 'EDIT', 'GLO'], ['HOME', 'SAVE', 'ARP', 'SEQ', 'PLAY', 'REC']];
+  const used = new Set(['FX', 'SEL', 'ENV', 'LFO', 'EDIT', 'GLO', 'HOME', 'SAVE', 'ARP', 'SEQ', 'PLAY', 'REC']);
+  rows.forEach((row, r) => row.forEach((name, c) => {
+    const x = 530 + c * 68, y = 140 + r * 64;
+    btns.append(el('rect', { class: 'pbtn' + (used.has(name) ? ' on' : ''), x, y, width: 56, height: 48, rx: 8 }));
+    btns.append(el('text', { class: 'lbl' + (used.has(name) ? '' : ' off'), x: x + 28, y: y + 29, style: 'font-size:13px' }, name));
+  }));
+  const keys = document.getElementById('keys');
+  const x0 = 120, kw = 47.5;
+  const whites = ['F3', 'G3', 'A3', 'B3', 'C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5', 'E5', 'F5', 'G5'];
+  whites.forEach((n, i) => {
+    const x = x0 + i * kw + 4;
+    keys.append(el('rect', { class: 'key on', x, y: 445, width: kw - 8, height: 92, rx: 16 }));
+    keys.append(el('rect', { class: 'white', x: x + kw / 2 - 7, y: 465, width: 6, height: 50, rx: 3 }));
+    keys.append(el('text', { class: 'tiny', x: x + (kw - 8) / 2, y: 532 }, String(i + 1)));
+  });
+  /* The first five are printed OP1-OP5 on the panel: the monitor's search keys. */
+  const blacks = [[0, 'OP1'], [1, 'OP2'], [2, 'OP3'], [4, 'OP4'], [5, 'OP5'], [7, 'F#4'], [8, 'G#4'], [9, 'A#4'], [11, 'C#5'], [12, 'D#5'], [14, 'F#5']];
+  blacks.forEach(([i, n]) => {
+    const cx = x0 + (i + 1) * kw, short = ['C#5', 'D#5', 'F#5'].includes(n) || n.startsWith('OP');
+    keys.append(el('rect', { class: 'key' + (short ? ' on' : ''), x: cx - 20, y: 345, width: 40, height: 88, rx: 16 }));
+    keys.append(el('rect', { class: 'white', x: cx - 3, y: 362, width: 6, height: 44, rx: 3 }));
+    keys.append(el('text', { class: short ? 'ann' : 'tiny', x: cx, y: 425, style: 'text-anchor:middle;font-size:12px' }, n));
+  });
+  keys.append(el('text', { class: 'ann', x: 500, y: 576, style: 'text-anchor:middle' }, 'MIDI channels 1–16'));
+})();
+</script>
+</body>
+</html>

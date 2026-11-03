@@ -1,0 +1,586 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flash FM-1 Firmware</title>
+<meta name="description" content="Install the FM-1 MIDI Processor firmware on an M-VAVE FM-1 from the browser, over USB MIDI.">
+<link rel="stylesheet" href="site.css">
+<style>
+.steps { counter-reset: step; }
+.step { position: relative; padding-left: 52px; }
+.step::before { counter-increment: step; content: counter(step); position: absolute; left: 18px; top: 18px;
+  width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--accent-ink);
+  font-weight: 700; font-size: .85rem; display: grid; place-items: center; }
+.step h2 { border: 0; margin: 0 0 .4em; padding: 0; font-size: 1.15rem; }
+.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; font-size: .94rem; margin: .6em 0; }
+.kv dt { color: var(--dim); }
+.kv dd { margin: 0; overflow-wrap: anywhere; font-family: ui-monospace, Consolas, monospace; font-size: .9rem; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; }
+.status { padding: 9px 12px; border-radius: 8px; margin-top: 12px; font-size: .94rem; display: none; }
+.status.show { display: block; }
+.status.ok { background: var(--good-bg); color: var(--good); }
+.status.bad { background: var(--bad-bg); color: var(--bad); }
+.status.info { background: var(--panel2); color: var(--text); }
+.status.warn { background: var(--warn-bg); color: var(--warn); }
+.progress { height: 12px; border-radius: 6px; background: var(--panel2); overflow: hidden; border: 1px solid var(--line); }
+.progress > div { height: 100%; width: 0; background: var(--accent); transition: width .15s; }
+.stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 12px 0 8px; font-size: .8rem; }
+.stages span { padding: 6px 4px; text-align: center; border-radius: 6px; background: var(--panel2); color: var(--dim); }
+.stages span.active { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.stages span.done { color: var(--good); }
+@media (max-width: 520px) { .stages { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+#log { max-height: 220px; overflow: auto; font-size: .8rem; margin: 8px 0 0; white-space: pre-wrap; }
+label.check { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; font-size: .94rem; }
+label.check input { margin-top: 5px; }
+input[type=file] { font: inherit; font-size: .9rem; max-width: 100%; }
+details summary { cursor: pointer; color: var(--dim); }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="index.html"><span class="dot"></span>FM-1 MIDI Processor</a>
+  <nav><a href="index.html">Help</a><a href="flash.html" aria-current="page">Flash firmware</a></nav>
+</div></header>
+
+<main class="wrap">
+<h1>Flash firmware</h1>
+<p class="lead">Install the FM-1 MIDI Processor firmware on an M-VAVE FM-1 over USB, from this page. It takes about a minute.</p>
+
+<div class="note warn" id="unsupported" hidden></div>
+
+<div class="note small">
+  <strong>Before you start</strong>
+  <ul style="margin:.4em 0 0;padding-left:1.2em">
+    <li>Use desktop <strong>Chrome or Edge</strong>. Firefox and Safari can't send the SysEx this needs.</li>
+    <li>Connect the FM-1 with a USB <em>data</em> cable, straight to the computer, and switch it on.</li>
+    <li>Close anything else using the FM-1's MIDI port: a DAW, MIDI-OX, other updater pages. Windows lets only one program open it.</li>
+    <li>Replacing the stock firmware erases its projects, voices and samples. Back them up first if you want them.</li>
+  </ul>
+</div>
+
+<div class="steps">
+
+<section class="card step" id="step-firmware">
+  <h2>Choose the firmware</h2>
+  <div id="fw-latest">
+    <p class="muted small" id="fw-loading">Loading the latest build…</p>
+  </div>
+  <dl class="kv" id="fw-info" hidden>
+    <dt>Firmware</dt><dd id="fw-name"></dd>
+    <dt>Identity</dt><dd id="fw-product"></dd>
+    <dt>Build</dt><dd id="fw-build"></dd>
+    <dt>Built</dt><dd id="fw-date"></dd>
+    <dt>Size</dt><dd id="fw-size"></dd>
+  </dl>
+  <details style="margin-top:10px">
+    <summary>Use a file on this computer instead</summary>
+    <p class="small muted">Pick the <code>.fwsc</code> package <em>and</em> its <code>manifest.json</code> or <code>build-identity.json</code> together (Ctrl-click both). The build ID in that file is how the FM-1 confirms the right firmware was installed.</p>
+    <input type="file" id="fw-file" multiple accept=".fwsc,.json">
+  </details>
+  <div class="status" id="fw-status"></div>
+</section>
+
+<section class="card step" id="step-device">
+  <h2>Connect the FM-1</h2>
+  <p class="small muted">Your browser will ask to allow MIDI device control (SysEx). Say yes.</p>
+  <div class="row"><button id="connect" class="primary">Connect</button></div>
+  <dl class="kv" id="dev-info" hidden>
+    <dt>Port</dt><dd id="dev-port"></dd>
+    <dt>Running</dt><dd id="dev-identity"></dd>
+    <dt>Installed build</dt><dd id="dev-build"></dd>
+  </dl>
+  <label class="check" id="force-row" hidden>
+    <input type="checkbox" id="force">
+    <span>Replace the firmware this FM-1 is running. I understand the stock projects, voices and samples may be lost.</span>
+  </label>
+  <div class="status" id="dev-status"></div>
+</section>
+
+<section class="card step" id="step-install">
+  <h2>Install</h2>
+  <p class="small muted">Keep this page open and the cable plugged in until it says <em>Done</em>. The FM-1 restarts twice. If something interrupts it, reconnect and press Install again: the update resumes from the loader.</p>
+  <div class="row"><button id="install" class="primary" disabled>Install</button></div>
+  <div class="stages" aria-hidden="true">
+    <span data-stage="prepare">Prepare loader</span><span data-stage="reconnect">Reconnect</span>
+    <span data-stage="write">Write firmware</span><span data-stage="verify">Restart &amp; check</span>
+  </div>
+  <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bar"><div></div></div>
+  <div class="status" id="install-status"></div>
+  <details style="margin-top:12px">
+    <summary>Log</summary>
+    <pre id="log"></pre>
+    <div class="row"><button id="save-log">Save log</button></div>
+  </details>
+</section>
+
+</div>
+
+<p class="small muted">This page speaks the FM-1's own update protocol (from the FM1 Open SDK's browser updater, over USB MIDI SysEx). It checks the package's checksums, the device's identity and, after the restart, the installed build. Nothing is sent anywhere except to the FM-1. To go back to the stock firmware, use M-VAVE's own updater.</p>
+</main>
+
+<script>
+'use strict';
+/* ---------------------------------------------------------------------------
+ * FM-1 update protocol, as in src/sdk/WebUpdate.js and tools/fm1_flash.py.
+ *
+ *   identity (17) -> capability (49) -> arm with size and build id (50)
+ *   -> enter loader (F0 22 24 35 7F F7) -> serve image until 0xE0000000
+ *   -> device reboots into the loader (identity ota-...)
+ *   -> enter loader again -> serve image until 0xF0000000 (Flash write)
+ *   -> device reboots into the new firmware -> capability must report the new build.
+ *
+ * Frames: F0, 7-bit packed [00 59 cmd lenLo lenHi 00 payload... ~sum(payload)], F7.
+ * ------------------------------------------------------------------------- */
+const FAMILY = 7;
+const VENDOR_LOADER_SHA = 'ef1f2db89b011fa53e71df363f0122de0ea896618c53fb53e8da676322004541';
+const ENTER_LOADER = [0xF0, 0x22, 0x24, 0x35, 0x7F, 0xF7];
+const FINISH_PREPARE = 0xE0000000, FINISH_WRITE = 0xF0000000;
+const SUCCESS = [115, 117, 99, 99, 101, 115, 115, 0]; // "success\0"
+const T = { idle: 10000, writeIdle: 180000, reconnect: 40000, settle: 600 };
+const OPEN_IDENTITY = /^(FM1_OFFICIAL_OPEN|FM1_COMMUNITY_\d+|FM-1_8\d{6})$/;
+const PORT_NAME = /fm.?1|felucca|sloop|clipper|ota|sinco|usb.?midi|composite/i;
+
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const hex = b => Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+const le = (p, at, n) => { let v = 0; for (let i = 0; i < n; i++) v += p[at + i] * 2 ** (i * 8); return v; };
+const ascii = p => String.fromCharCode(...p).replace(/\0.*$/s, '');
+class FlashError extends Error { constructor(m, code) { super(m); this.code = code; } }
+const check = (ok, msg, code) => { if (!ok) throw new FlashError(msg, code); };
+async function sha256(bytes) { return hex(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))); }
+
+/* ---- Package (.fwsc) checks ---------------------------------------------- */
+function crc16(bytes) {
+  let c = 0;
+  for (const b of bytes) { c ^= b << 8; for (let i = 0; i < 8; i++) c = (c & 0x8000 ? (c << 1) ^ 0x1021 : c << 1) & 0xFFFF; }
+  return c;
+}
+function decodeHeader(bytes, key = 0xFFFF) {
+  const p = Uint8Array.from(bytes); let k = key;
+  for (let i = 0; i < p.length; i++) { p[i] ^= k & 255; k = ((k << 1) ^ (k & 0x8000 ? 0x1021 : 0)) & 0xFFFF; }
+  return p;
+}
+function inspectPackage(raw) {
+  check(raw.length >= 1024 && raw.length <= 2097152, 'The package length is invalid.');
+  const image = new Uint8Array(raw.length - 20); let product = '', ended = false;
+  for (let i = 0; i < 20; i++) {
+    image.set(raw.subarray(i * 48, i * 48 + 47), i * 47);
+    const marker = raw[i * 48 + 47];
+    if (marker === 125) ended = true;
+    else { const c = (marker - i - 1) & 255; check(!ended && c >= 32 && c <= 126, 'The package identity is invalid.'); product += String.fromCharCode(c); }
+  }
+  image.set(raw.subarray(960), 940);
+  const head = decodeHeader(image.subarray(0, 64)), count = le(head, 8, 2);
+  check(le(head, 0, 2) === crc16(head.subarray(2)) && le(head, 4, 4) === image.length, 'The package header check failed.');
+  check(ascii(head.subarray(16, 32)) === 'AC791N' && count > 0 && count <= 12, 'The chip model or package table is invalid.');
+  const table = image.subarray(64, 64 + count * 80);
+  check(crc16(table) === le(head, 2, 2), 'The package table check failed.');
+  const entries = [];
+  for (let i = 0; i < count; i++) {
+    const e = decodeHeader(table.subarray(i * 80, i * 80 + 80));
+    const type = le(e, 0, 2), offset = le(e, 8, 4), size = le(e, 12, 4), stored = le(e, 16, 4), encrypted = le(e, 24, 4);
+    const name = ascii(e.subarray(64));
+    check(offset >= 64 + count * 80 && offset <= image.length && size <= image.length - offset, 'A package entry is out of range.');
+    check(stored >= size && stored <= image.length - offset && (!encrypted || encrypted === stored), 'A package entry size is invalid.');
+    const data = image.subarray(offset, offset + size);
+    check(encrypted || crc16(data) === le(e, 4, 2), 'Package entry CRC failed: ' + name);
+    check(!encrypted || (type !== 0 && type !== 100), 'The main image or loader is encrypted.');
+    entries.push({ type, size, data });
+  }
+  const flash = entries.filter(e => e.type === 0), loader = entries.filter(e => e.type === 100);
+  check(flash.length === 1 && flash[0].size >= 16384 && flash[0].size <= 1044480 && flash[0].size % 4096 === 0, 'The Flash image is invalid.');
+  check(loader.length === 1 && loader[0].size > 0 && loader[0].size < 32768, 'The loader is missing or invalid.');
+  return { product, image, loader: loader[0].data };
+}
+async function preparePackage(raw, meta, source) {
+  check(/^[0-9a-f]{64}$/.test(meta.build_id || ''), 'The build ID is missing or invalid.');
+  if (meta.sha256) check(await sha256(raw) === meta.sha256, 'The firmware file does not match its manifest (SHA-256). Reload the page and try again.');
+  const pkg = inspectPackage(raw);
+  check(OPEN_IDENTITY.test(pkg.product), `The package identity ${pkg.product} is not an Open-based firmware.`);
+  if (meta.product) check(meta.product === pkg.product, 'The package identity does not match its manifest.');
+  const vendor = await sha256(pkg.loader) === VENDOR_LOADER_SHA;
+  return { ...pkg, build_id: meta.build_id, bytes: raw.length, source, built: meta.built || '',
+    name: meta.name || source, loaderIdentity: vendor ? 'ota-FM-1_015' : 'ota-FM1C_' + meta.build_id.slice(0, 16) };
+}
+
+/* ---- Frames --------------------------------------------------------------- */
+function pack7(bytes) {
+  const out = []; let bits = 0, value = 0;
+  for (const b of bytes) { value |= b << bits; bits += 8; while (bits >= 7) { out.push(value & 127); value >>>= 7; bits -= 7; } }
+  if (bits) out.push(value & 127);
+  return out;
+}
+function frame(command, payload = []) {
+  check(payload.length <= 520, 'Frame payload too long.');
+  let sum = 0; for (const b of payload) sum = (sum + b) & 255;
+  return Uint8Array.from([0xF0, ...pack7([0, 89, command, payload.length & 255, payload.length >> 8, 0, ...payload, (~sum) & 255]), 0xF7]);
+}
+function parse(bytes) {
+  if (!bytes || bytes.length < 10 || bytes.length > 608 || bytes[0] !== 0xF0 || bytes[bytes.length - 1] !== 0xF7) return null;
+  const raw = []; let bits = 0, value = 0;
+  for (let i = 1; i < bytes.length - 1; i++) {
+    if (bytes[i] > 127) return null;
+    value |= bytes[i] << bits; bits += 7;
+    if (bits >= 8) { raw.push(value & 255); value >>>= 8; bits -= 8; }
+  }
+  if (bits >= 7 || value || raw.length < 7 || raw[0] !== 0 || raw[1] !== 89 || le(raw, 3, 3) !== raw.length - 7) return null;
+  let sum = 0; for (let i = 6; i < raw.length; i++) sum = (sum + raw[i]) & 255;
+  return sum === 255 ? { command: raw[2], data: Uint8Array.from(raw.slice(6, -1)) } : null;
+}
+
+/* ---- MIDI link ------------------------------------------------------------ */
+async function withTimeout(promise, ms, message) {
+  let timer;
+  try { return await Promise.race([promise, new Promise((_, rej) => { timer = setTimeout(() => rej(new FlashError(message, 'PORT_TIMEOUT')), ms); })]); }
+  finally { clearTimeout(timer); }
+}
+class Link {
+  constructor(input, output) {
+    this.input = input; this.output = output; this.queue = []; this.waiter = null; this.closed = false;
+    this.name = input.name || '?';
+    this.receive = ev => {
+      const p = parse(ev.data); if (!p || this.closed) return;
+      if (this.queue.length < 64) this.queue.push(p);
+      if (this.waiter) this.waiter();
+    };
+    input.addEventListener('midimessage', this.receive);
+  }
+  get lost() { return this.closed || this.input.state === 'disconnected' || this.output.state === 'disconnected'; }
+  send(bytes) { check(!this.lost, 'The USB connection was lost.'); this.output.send(bytes); }
+  async read(ms) {
+    if (!this.queue.length && !this.lost) await new Promise(resolve => {
+      const done = () => { clearTimeout(timer); this.waiter = null; resolve(); };
+      const timer = setTimeout(done, ms); this.waiter = done;
+    });
+    return this.queue.shift() || null;
+  }
+  async query(command, payload = [], ms = 1500) {
+    this.queue.length = 0; this.send(frame(command, payload));
+    const until = Date.now() + ms;
+    while (Date.now() < until) {
+      const r = await this.read(Math.min(250, until - Date.now()));
+      if (r && r.command === command) return r.data;
+      check(!this.lost, 'The USB connection was lost.');
+    }
+    throw new FlashError('The device did not answer.', 'TIMEOUT');
+  }
+  async close() {
+    if (this.closed) return;
+    this.closed = true; this.input.removeEventListener('midimessage', this.receive);
+    if (this.waiter) this.waiter();
+    await Promise.allSettled([withTimeout(this.input.close(), 3000, 'close'), withTimeout(this.output.close(), 3000, 'close')]);
+  }
+}
+function portPairs(access) {
+  const ins = [...access.inputs.values()].filter(p => p.state === 'connected');
+  const outs = [...access.outputs.values()].filter(p => p.state === 'connected');
+  return ins.filter(p => PORT_NAME.test(p.name || '')).flatMap(input => {
+    const named = outs.filter(o => o.name === input.name);
+    const exact = named.filter(o => (o.manufacturer || '') === (input.manufacturer || ''));
+    const found = exact.length === 1 ? exact : named.length === 1 ? named : [];
+    return found.length === 1 ? [{ input, output: found[0] }] : [];
+  });
+}
+async function openPair(pair) {
+  try {
+    await withTimeout(pair.input.open(), 5000, 'Opening the MIDI port timed out. Close other MIDI programs and try again.');
+    await withTimeout(pair.output.open(), 5000, 'Opening the MIDI port timed out. Close other MIDI programs and try again.');
+  } catch (e) {
+    await Promise.allSettled([pair.input.close(), pair.output.close()]);
+    throw e;
+  }
+  const link = new Link(pair.input, pair.output);
+  try {
+    let reply;
+    for (let attempt = 0; attempt < 2 && !reply; attempt++) {
+      try { reply = await link.query(17, [], 750); }
+      catch (e) { if (e.code !== 'TIMEOUT' || attempt || link.lost) throw e; }
+    }
+    check(reply.length === 27 && /^[\x20-\x7e]{1,27}$/.test(ascii(reply)), 'The device sent an invalid identity reply.');
+    return { link, identity: ascii(reply) };
+  } catch (e) { await link.close(); throw e; }
+}
+async function discover(access) {
+  const pairs = portPairs(access), found = []; let lastError = null;
+  check(pairs.length <= 16, 'Too many MIDI ports. Disconnect other MIDI devices and try again.');
+  for (const pair of pairs) {
+    try { found.push(await openPair(pair)); }
+    catch (e) { lastError = e; log(`  ${pair.input.name}: ${e.message}`); }
+  }
+  if (found.length > 1) {
+    await Promise.allSettled(found.map(d => d.link.close()));
+    throw new FlashError('More than one device answered. Connect only one FM-1.', 'AMBIGUOUS');
+  }
+  if (found.length) return found[0];
+  if (lastError && lastError.code === 'PORT_TIMEOUT') throw lastError;
+  return null;
+}
+function capability(data) {
+  check(data.length === 47 && ascii(data.subarray(0, 4)) === 'FMC1' && data[4] === 1 && data[5] <= 7
+    && le(data, 8, 2) === 512 && le(data, 10, 4) === 1048576, 'The device update protocol does not match.');
+  check(data[7] === 1, 'The device uses an unknown loader.');
+  return { family: data[5], state: data[6], build: hex(data.subarray(14, 46)), error: data[46] };
+}
+
+/* ---- Update --------------------------------------------------------------- */
+let access = null, pkg = null, link = null, device = null, busy = false;
+
+async function serve(image, finish, idle, stage, from, to) {
+  const covered = new Uint8Array(Math.ceil(image.length / 8));
+  const started = Date.now(); let last = started, total = 0;
+  for (;;) {
+    check(Date.now() - started < Math.max(idle * 3, 120000), 'The update took too long.');
+    check(Date.now() - last < idle, 'The device stopped requesting data.');
+    const packet = await link.read(250);
+    if (!packet) { check(!link.lost, 'The USB connection was lost. Reconnect and press Install to resume.'); continue; }
+    if (packet.command !== 48 || packet.data.length !== 8) continue;
+    const p = packet.data, address = le(p, 1, 4), count = le(p, 5, 3);
+    check(count > 0 && count <= 512, 'The device requested an invalid length.');
+    if (address === FINISH_PREPARE || address === FINISH_WRITE) {
+      check(address === finish && count === 8, 'The device is in an unexpected update phase.');
+      link.send(frame(48, [...p, ...SUCCESS]));
+      const end = Date.now() + T.settle;   // answer repeated finish requests before letting go
+      while (Date.now() < end && !link.lost) {
+        const again = await link.read(Math.min(100, end - Date.now()));
+        if (again && again.command === 48 && again.data.length === 8 && le(again.data, 1, 4) === finish)
+          link.send(frame(48, [...again.data, ...SUCCESS]));
+      }
+      progress(to);
+      return;
+    }
+    check(address <= image.length && count <= image.length - address, 'The device read past the end of the image.');
+    last = Date.now();
+    link.send(frame(48, [...p, ...image.subarray(address, address + count)]));
+    for (let i = address; i < address + count; i++) {
+      const bit = 1 << (i & 7);
+      if (!(covered[i >> 3] & bit)) { covered[i >> 3] |= bit; total++; }
+    }
+    progress(from + (to - from) * Math.min(1, total / image.length));
+  }
+}
+async function waitFor(identity, anyLoader) {
+  const end = Date.now() + T.reconnect;
+  while (Date.now() < end) {
+    let found = null;
+    try { found = await discover(access); } catch (e) { if (e.code === 'AMBIGUOUS') throw e; }
+    if (found) {
+      if (found.identity === identity || (anyLoader && /^ota-/i.test(found.identity))) { link = found.link; return found.identity; }
+      await found.link.close();
+    }
+    await sleep(T.settle);
+  }
+  throw new FlashError(`The device did not come back as ${identity} within ${T.reconnect / 1000} s. Replug USB, press Connect, then Install: it resumes from the loader.`);
+}
+async function closeLink() { if (link) { const l = link; link = null; await l.close(); } }
+
+async function connect() {
+  if (busy) return;
+  setStatus('dev-status', '', ''); $('dev-info').hidden = true; device = null; updateInstall();
+  try {
+    if (!access) {
+      check(navigator.requestMIDIAccess, 'This browser has no Web MIDI. Use desktop Chrome or Edge.');
+      try { access = await navigator.requestMIDIAccess({ sysex: true }); }
+      catch (e) { throw new FlashError('MIDI access was refused. Allow "MIDI device control" for this site (the icon in the address bar) and press Connect again.'); }
+    }
+    await closeLink();
+    setStatus('dev-status', 'info', 'Looking for the FM-1…');
+    log('Connect: ports ' + [...access.inputs.values()].filter(p => p.state === 'connected').map(p => p.name).join(', '));
+    const found = await discover(access);
+    if (!found) {
+      const any = [...access.inputs.values()].some(p => p.state === 'connected');
+      throw new FlashError(any
+        ? 'Found MIDI ports, but no FM-1 answered. Close other MIDI programs and updater pages, replug USB and try again.'
+        : 'No MIDI devices found. Connect the FM-1 by USB, switch it on and press Connect again.');
+    }
+    link = found.link;
+    device = { identity: found.identity, port: link.name, mode: null, build: null, family: FAMILY };
+    log(`Device: ${device.identity} on "${device.port}"`);
+    $('dev-port').textContent = device.port;
+    $('dev-identity').textContent = device.identity;
+    $('dev-build').textContent = '—';
+    $('dev-info').hidden = false;
+    if (/^ota-/i.test(device.identity)) {
+      device.mode = 'loader';
+      setStatus('dev-status', 'warn', 'The FM-1 is in its update loader, probably from an interrupted update. Press Install to finish it.');
+    } else if (OPEN_IDENTITY.test(device.identity)) {
+      let cap = null;
+      try { cap = capability(await link.query(49)); } catch (e) { if (e.code !== 'TIMEOUT') throw e; }
+      if (!cap) { device.mode = 'legacy'; device.force = true; }
+      else {
+        check(cap.state === 0, 'The device is busy with another update. Restart it and try again.');
+        device.mode = 'tagged'; device.build = cap.build; device.family = cap.family;
+        device.force = cap.family !== FAMILY;
+        $('dev-build').textContent = cap.build.slice(0, 16);
+      }
+      if (device.force)
+        setStatus('dev-status', 'warn', 'Connected. This FM-1 runs other Open-based firmware. Tick the box below to replace it.');
+      else if (pkg && cap.build === pkg.build_id)
+        setStatus('dev-status', 'ok', 'Connected. This FM-1 already runs this build, so there is nothing to install.');
+      else
+        setStatus('dev-status', 'ok', 'Connected. Ready to install.');
+    } else {
+      device.mode = 'legacy'; device.force = true;
+      setStatus('dev-status', 'warn', `Connected. This FM-1 runs ${device.identity === 'FM-1_015' ? 'the stock M-VAVE V15 firmware' : device.identity}. Tick the box below to replace it.`);
+    }
+    $('force-row').hidden = !device.force;
+  } catch (e) {
+    await closeLink().catch(() => {});
+    setStatus('dev-status', 'bad', e.message); log('Error: ' + e.message);
+  }
+  updateInstall();
+}
+
+async function install() {
+  if (busy || !pkg || !device || !link) return;
+  busy = true; updateInstall();
+  setStatus('install-status', 'info', 'Installing. Keep this page open and the cable plugged in.');
+  progress(0); stages(null);
+  const started = Date.now();
+  try {
+    const reply = await link.query(17);
+    check(ascii(reply) === device.identity, 'The device identity changed. Press Connect again.');
+    if (device.mode !== 'loader') {
+      check(!device.force || $('force').checked, 'Tick the box to confirm replacing the current firmware.');
+      if (device.mode === 'tagged') {
+        const cap = capability(await link.query(49));
+        check(cap.state === 0, 'The device is busy with another update.');
+        check(cap.build !== pkg.build_id, 'The device already runs this build.');
+        const n = pkg.image.length, tag = pkg.build_id.match(/../g).map(s => parseInt(s, 16));
+        const ack = await link.query(50, [1, cap.family, n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255, ...tag]);
+        check(ack.length === 1 && ack[0] === 0, 'The device refused this package.');
+      }
+      stages('prepare'); log('Preparing the loader…');
+      link.queue.length = 0; link.send(ENTER_LOADER);
+      await serve(pkg.image, FINISH_PREPARE, T.idle, 'prepare', 0, 20);
+      await closeLink();
+      stages('reconnect'); log('Waiting for the loader to reconnect…');
+      const id = await waitFor(pkg.loaderIdentity, device.mode === 'legacy');
+      log('Loader: ' + id);
+    }
+    stages('write'); log('Writing the firmware…');
+    link.queue.length = 0; link.send(ENTER_LOADER);
+    await serve(pkg.image, FINISH_WRITE, T.writeIdle, 'write', 20, 97);
+    await closeLink();
+    stages('verify'); log('Waiting for the FM-1 to restart…');
+    await waitFor(pkg.product, false);
+    const cap = capability(await link.query(49));
+    check(cap.family === FAMILY && cap.build === pkg.build_id && cap.state === 0,
+      `The FM-1 restarted, but reports build ${cap.build.slice(0, 16)} instead of ${pkg.build_id.slice(0, 16)}.`);
+    progress(100); stages('done');
+    const secs = Math.round((Date.now() - started) / 1000);
+    log(`Done in ${secs} s. Build ${cap.build.slice(0, 16)}.`);
+    setStatus('install-status', 'ok', `Done in ${secs} s. The FM-1 runs build ${cap.build.slice(0, 16)}. The MIDI monitor should be on its screen.`);
+    device.mode = 'tagged'; device.build = cap.build; device.identity = pkg.product; device.force = false;
+    $('dev-identity').textContent = pkg.product; $('dev-build').textContent = cap.build.slice(0, 16);
+    $('force-row').hidden = true;
+    setStatus('dev-status', 'ok', 'Connected. This FM-1 runs this build.');
+  } catch (e) {
+    log('Error: ' + e.message);
+    setStatus('install-status', 'bad', e.message + (e.message.includes('resume') ? '' : ' If the FM-1 shows the loader, press Connect, then Install to resume.'));
+    device = null;
+  } finally {
+    await closeLink().catch(() => {});
+    busy = false; updateInstall();
+  }
+}
+
+/* ---- UI ------------------------------------------------------------------- */
+function setStatus(id, kind, text) {
+  const el = $(id); el.className = 'status' + (text ? ' show ' + kind : ''); el.textContent = text;
+}
+function log(text) {
+  const el = $('log'); el.textContent += `[${new Date().toLocaleTimeString()}] ${text}\n`; el.scrollTop = el.scrollHeight;
+}
+function progress(pct) {
+  pct = Math.max(0, Math.min(100, pct));
+  $('bar').firstElementChild.style.width = pct + '%'; $('bar').setAttribute('aria-valuenow', Math.round(pct));
+}
+const STAGES = ['prepare', 'reconnect', 'write', 'verify'];
+function stages(current) {
+  const at = current === 'done' ? STAGES.length : STAGES.indexOf(current);
+  document.querySelectorAll('.stages span').forEach((el, i) => {
+    el.className = i < at ? 'done' : i === at ? 'active' : '';
+  });
+}
+function updateInstall() {
+  const same = device && device.mode === 'tagged' && pkg && device.build === pkg.build_id;
+  const needForce = device && device.force && device.mode !== 'loader' && !$('force').checked;
+  $('install').disabled = busy || !pkg || !device || !link || same || needForce;
+  $('connect').disabled = busy;
+  $('fw-file').disabled = busy;
+}
+function showPackage(p) {
+  pkg = p;
+  $('fw-name').textContent = p.name;
+  $('fw-product').textContent = p.product;
+  $('fw-build').textContent = p.build_id.slice(0, 16);
+  $('fw-date').textContent = p.built || '—';
+  $('fw-size').textContent = (p.bytes / 1024).toFixed(0) + ' KB';
+  $('fw-info').hidden = false;
+  setStatus('fw-status', 'ok', 'Firmware checked: package CRCs and identity are valid.');
+  if (device && device.mode === 'tagged' && !device.force) {
+    if (device.build === p.build_id) setStatus('dev-status', 'ok', 'Connected. This FM-1 already runs this build, so there is nothing to install.');
+    else setStatus('dev-status', 'ok', 'Connected. Ready to install.');
+  }
+  updateInstall();
+}
+async function loadLatest() {
+  try {
+    const res = await fetch('firmware/manifest.json', { cache: 'no-cache' });
+    check(res.ok, 'No firmware manifest found next to this page.');
+    const meta = await res.json();
+    check(meta.schema === 1 && typeof meta.file === 'string' && /^[\w.-]+$/.test(meta.file), 'The firmware manifest is invalid.');
+    const bin = await fetch('firmware/' + meta.file, { cache: 'no-cache' });
+    check(bin.ok, 'The firmware file is missing.');
+    const raw = new Uint8Array(await bin.arrayBuffer());
+    check(!meta.bytes || raw.length === meta.bytes, 'The firmware file has the wrong size.');
+    $('fw-loading').textContent = 'Latest build, from this site:';
+    showPackage(await preparePackage(raw, meta, meta.file));
+    log(`Firmware: ${meta.file}, build ${meta.build_id.slice(0, 16)}, ${raw.length} bytes`);
+  } catch (e) {
+    $('fw-loading').textContent = location.protocol === 'file:'
+      ? 'This page was opened as a file, so it can\'t load the latest build. Pick the files below, or serve the folder (python -m http.server).'
+      : 'Couldn\'t load the latest build: ' + e.message + ' Pick a file below instead.';
+    $('fw-file').closest('details').open = true;
+  }
+}
+$('fw-file').addEventListener('change', async ev => {
+  const files = [...ev.target.files];
+  try {
+    const fw = files.find(f => /\.fwsc$/i.test(f.name));
+    const js = files.find(f => /\.json$/i.test(f.name));
+    check(fw, 'Pick a .fwsc firmware package.');
+    check(js, 'Also pick its manifest.json or build-identity.json (select both files together).');
+    const meta = JSON.parse(await js.text());
+    const raw = new Uint8Array(await fw.arrayBuffer());
+    if (meta.file && meta.file !== fw.name) delete meta.sha256;  // a manifest for another file: use only its build ID
+    $('fw-loading').textContent = 'File from this computer:';
+    showPackage(await preparePackage(raw, { ...meta, name: fw.name }, fw.name));
+    log(`Firmware: ${fw.name}, build ${meta.build_id.slice(0, 16)}, ${raw.length} bytes`);
+  } catch (e) {
+    setStatus('fw-status', 'bad', e instanceof SyntaxError ? 'That JSON file could not be read.' : e.message);
+  }
+});
+$('connect').addEventListener('click', connect);
+$('install').addEventListener('click', install);
+$('force').addEventListener('change', updateInstall);
+$('save-log').addEventListener('click', () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([$('log').textContent], { type: 'text/plain' }));
+  a.download = 'fm1-flash-log.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+addEventListener('beforeunload', ev => { if (busy) { ev.preventDefault(); ev.returnValue = ''; } });
+
+if (!navigator.requestMIDIAccess || !window.isSecureContext && location.protocol !== 'file:') {
+  const n = $('unsupported'); n.hidden = false;
+  n.textContent = !navigator.requestMIDIAccess
+    ? 'This browser has no Web MIDI, so it can\'t flash the FM-1. Open this page in desktop Chrome or Edge.'
+    : 'Web MIDI needs a secure (https) page. Open this page from its https address.';
+  $('connect').disabled = true;
+}
+loadLatest();
+</script>
+</body>
+</html>

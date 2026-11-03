@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FM-1 Screen Designer</title>
+<style>
+:root {
+  --bg: #121417; --panel: #1b1f24; --panel2: #23282f; --line: #313841;
+  --text: #e6e9ec; --dim: #8b949e; --accent: #2fc4d8; --danger: #e5534b; --warn: #d29922;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+  font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+button, select, input, textarea { font: inherit; color: var(--text); background: var(--panel2);
+  border: 1px solid var(--line); border-radius: 5px; }
+button { padding: 4px 10px; cursor: pointer; white-space: nowrap; }
+button:hover { border-color: var(--accent); }
+button.primary { background: #17535c; border-color: #1f7480; }
+button.danger:hover { border-color: var(--danger); color: var(--danger); }
+button:disabled { opacity: .4; cursor: default; }
+input[type=text], input[type=number], select, textarea { padding: 3px 6px; width: 100%; }
+input[type=number] { width: 72px; }
+input[type=checkbox] { accent-color: var(--accent); }
+textarea { resize: vertical; min-height: 54px; font-family: ui-monospace, Consolas, monospace; }
+.app { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+header { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 12px;
+  background: var(--panel); border-bottom: 1px solid var(--line); }
+header h1 { font-size: 15px; margin: 0 10px 0 0; font-weight: 600; }
+header .sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+header label { display: flex; align-items: center; gap: 5px; color: var(--dim); }
+header select { width: auto; }
+.main { display: grid; grid-template-columns: 210px 1fr 330px; min-height: 0; }
+aside, .center { min-height: 0; overflow: auto; }
+aside { background: var(--panel); padding: 10px; }
+aside.left { border-right: 1px solid var(--line); }
+aside.right { border-left: 1px solid var(--line); }
+h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim);
+  margin: 14px 0 6px; font-weight: 600; }
+h2:first-child { margin-top: 0; }
+.list { display: flex; flex-direction: column; gap: 2px; }
+.list .item { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 5px;
+  cursor: pointer; border: 1px solid transparent; }
+.list .item:hover { background: var(--panel2); }
+.list .item.active { background: #17414a; border-color: #1f7480; }
+.list .item .kind { font-size: 10px; color: var(--dim); width: 34px; flex: none; text-transform: uppercase; }
+.list .item .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.list .item .warn { color: var(--warn); }
+.row-buttons { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.center { padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.stage { position: relative; background: #000; box-shadow: 0 0 0 1px #3a424c, 0 0 0 10px #0b0d0f, 0 0 0 11px #3a424c; }
+canvas#view { display: block; cursor: default; image-rendering: pixelated; }
+.status { color: var(--dim); font-family: ui-monospace, Consolas, monospace; font-size: 12px; min-height: 18px; }
+.section { width: 100%; max-width: 760px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px 12px; }
+.section h2 { margin-top: 0; }
+table { width: 100%; border-collapse: collapse; }
+td { padding: 3px 4px; vertical-align: middle; }
+td.lbl { color: var(--dim); width: 96px; white-space: nowrap; }
+.props td.lbl { width: 92px; }
+.inline { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.swatches { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+.swatch { width: 18px; height: 18px; border-radius: 3px; border: 1px solid #0006; cursor: pointer; padding: 0; }
+.swatch.on { outline: 2px solid var(--accent); outline-offset: 1px; }
+input[type=color] { width: 34px; height: 26px; padding: 1px; }
+.hex { width: 78px !important; font-family: ui-monospace, Consolas, monospace; }
+.hint { color: var(--dim); font-size: 12px; }
+.warnbox { margin-top: 8px; padding: 6px 8px; border: 1px solid #5c4813; background: #2a2210;
+  color: #e3b341; border-radius: 5px; font-size: 12px; }
+.warnbox:empty { display: none; }
+.controls-table select { width: 150px; }
+.controls-table td:first-child { width: 1%; white-space: nowrap; }
+.controls-table td:first-child input { width: 150px; }
+.saved { color: var(--dim); font-size: 12px; margin-left: auto; }
+kbd { font-family: ui-monospace, Consolas, monospace; font-size: 11px; padding: 0 4px; border: 1px solid var(--line);
+  border-radius: 3px; background: var(--panel2); }
+@media (max-width: 1100px) { .main { grid-template-columns: 180px 1fr 290px; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>FM-1 Screen Designer</h1>
+    <span class="hint">Add:</span>
+    <button data-add="text" title="Static text">Text</button>
+    <button data-add="value" title="Text bound to live data">Value</button>
+    <button data-add="rect" title="Filled or outlined box">Box</button>
+    <button data-add="bar" title="Meter / value bar">Bar</button>
+    <button data-add="list" title="Rows of text, e.g. MIDI monitor or menu">List</button>
+    <span class="sep"></span>
+    <button id="undo" title="Undo (Ctrl+Z)">Undo</button>
+    <button id="redo" title="Redo (Ctrl+Y)">Redo</button>
+    <span class="sep"></span>
+    <label>Zoom <select id="zoom"><option>2</option><option>3</option><option>4</option></select></label>
+    <label><input type="checkbox" id="grid"> Grid</label>
+    <label>Snap <select id="snap">
+      <option value="cell">Cell 12×16</option><option value="half">Half 6×8</option><option value="pixel">Pixel</option>
+    </select></label>
+    <span class="sep"></span>
+    <button id="export" class="primary" title="Download all screens as JSON">Export JSON</button>
+    <button id="copy" title="Copy all screens as JSON">Copy JSON</button>
+    <button id="import" title="Add screens from an exported JSON file">Import…</button>
+    <button id="png" title="Download the current screen as a 3× PNG">PNG</button>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
+    <span class="saved" id="saved"></span>
+  </header>
+  <div class="main">
+    <aside class="left">
+      <h2>Screens</h2>
+      <div class="list" id="screenList"></div>
+      <div class="row-buttons">
+        <button id="screenNew">New</button>
+        <button id="screenDup">Duplicate</button>
+        <button id="screenUp" title="Move up">↑</button>
+        <button id="screenDown" title="Move down">↓</button>
+        <button id="screenDel" class="danger">Delete</button>
+      </div>
+      <h2>Shortcuts</h2>
+      <div class="hint">
+        Drag to move · <kbd>Alt</kbd> drag = pixel snap<br>
+        <kbd>←↑→↓</kbd> nudge 1 px · <kbd>Shift</kbd> = snap step<br>
+        <kbd>Del</kbd> delete · <kbd>Ctrl</kbd>+<kbd>D</kbd> duplicate<br>
+        <kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd> undo / redo · <kbd>Esc</kbd> deselect
+      </div>
+      <h2>Display</h2>
+      <div class="hint">240×240 RGB565. Built-in 5×7 font, uppercase only. At 2× each character is one 12×16 cell, so a screen is 20 columns × 15 rows.</div>
+    </aside>
+    <div class="center">
+      <div class="stage"><canvas id="view"></canvas></div>
+      <div class="status" id="status">&nbsp;</div>
+      <div class="section">
+        <h2>Controls on this screen</h2>
+        <table class="controls-table" id="controlsTable"></table>
+        <div class="row-buttons"><button id="controlAdd">Add control</button></div>
+      </div>
+    </div>
+    <aside class="right">
+      <h2>Elements <span class="hint" style="text-transform:none;letter-spacing:0">(top = drawn last)</span></h2>
+      <div class="list" id="layerList"></div>
+      <div class="row-buttons" id="layerButtons">
+        <button id="layerUp" title="Bring forward">Forward</button>
+        <button id="layerDown" title="Send backward">Backward</button>
+        <button id="layerDup">Duplicate</button>
+        <button id="layerDel" class="danger">Delete</button>
+      </div>
+      <h2 id="propsTitle">Screen</h2>
+      <table class="props" id="props"></table>
+      <div class="warnbox" id="warnings"></div>
+    </aside>
+  </div>
+</div>
+<script>
+'use strict';
+/* ---------- Firmware font: identical to app/screen.c ---------- */
+const FONT = [
+  [0x3e,0x51,0x49,0x45,0x3e],[0,0x42,0x7f,0x40,0],[0x42,0x61,0x51,0x49,0x46],
+  [0x21,0x41,0x45,0x4b,0x31],[0x18,0x14,0x12,0x7f,0x10],[0x27,0x45,0x45,0x45,0x39],
+  [0x3c,0x4a,0x49,0x49,0x30],[0x01,0x71,0x09,0x05,0x03],[0x36,0x49,0x49,0x49,0x36],
+  [0x06,0x49,0x49,0x29,0x1e],[0x7e,0x11,0x11,0x11,0x7e],[0x7f,0x49,0x49,0x49,0x36],
+  [0x3e,0x41,0x41,0x41,0x22],[0x7f,0x41,0x41,0x22,0x1c],[0x7f,0x49,0x49,0x49,0x41],
+  [0x7f,0x09,0x09,0x09,0x01],[0x3e,0x41,0x49,0x49,0x7a],[0x7f,0x08,0x08,0x08,0x7f],
+  [0,0x41,0x7f,0x41,0],[0x20,0x40,0x41,0x3f,0x01],[0x7f,0x08,0x14,0x22,0x41],
+  [0x7f,0x40,0x40,0x40,0x40],[0x7f,0x02,0x0c,0x02,0x7f],[0x7f,0x04,0x08,0x10,0x7f],
+  [0x3e,0x41,0x41,0x41,0x3e],[0x7f,0x09,0x09,0x09,0x06],[0x3e,0x41,0x51,0x21,0x5e],
+  [0x7f,0x09,0x19,0x29,0x46],[0x46,0x49,0x49,0x49,0x31],[0x01,0x01,0x7f,0x01,0x01],
+  [0x3f,0x40,0x40,0x40,0x3f],[0x1f,0x20,0x40,0x20,0x1f],[0x3f,0x40,0x38,0x40,0x3f],
+  [0x63,0x14,0x08,0x14,0x63],[0x07,0x08,0x70,0x08,0x07],[0x61,0x51,0x49,0x45,0x43]];
+const PUNCT = [
+  [45,8,8,8,8,8],[47,0x60,0x18,6,1,0],[43,8,8,0x3e,8,8],[35,0x14,0x7f,0x14,0x7f,0x14],
+  [37,0x63,0x13,8,0x64,0x63],[62,0x41,0x22,0x14,8,0],[63,2,1,0x51,9,6],[33,0,0,0x5f,0,0],
+  [34,0,7,0,7,0],[36,0x24,0x2a,0x7f,0x2a,0x12],[38,0x36,0x49,0x55,0x22,0x50],[39,0,5,3,0,0],
+  [40,0,0x1c,0x22,0x41,0],[41,0,0x41,0x22,0x1c,0],[42,0x14,8,0x3e,8,0x14],[44,0,0x50,0x30,0,0],
+  [46,0,0x60,0x60,0,0],[58,0,0x36,0x36,0,0],[59,0,0x56,0x36,0,0],[60,8,0x14,0x22,0x41,0],
+  [61,0x14,0x14,0x14,0x14,0x14],[64,0x32,0x49,0x79,0x41,0x3e],[91,0,0x7f,0x41,0x41,0],
+  [92,1,6,0x18,0x60,0],[93,0,0x41,0x41,0x7f,0],[94,4,2,1,2,4],[95,0x40,0x40,0x40,0x40,0x40],
+  [96,0,1,2,4,0],[123,0,8,0x36,0x41,0],[124,0,0,0x7f,0,0],[125,0,0x41,0x36,8,0],[126,8,4,8,0x10,8]];
+const PUNCT_MAP = new Map(PUNCT.map(p => [p[0], p.slice(1)]));
+const BLANK = [0,0,0,0,0];
+function glyph(ch) {
+  const c = ch.toUpperCase().charCodeAt(0);
+  if (c >= 48 && c <= 57) return FONT[c - 48];
+  if (c >= 65 && c <= 90) return FONT[10 + c - 65];
+  return PUNCT_MAP.get(c) || BLANK;
+}
+function supported(ch) {
+  if (ch === ' ') return true;
+  const c = ch.toUpperCase().charCodeAt(0);
+  return (c >= 48 && c <= 57) || (c >= 65 && c <= 90) || PUNCT_MAP.has(c);
+}
+
+/* ---------- Display, colours, controls ---------- */
+const W = 240, H = 240, CELL_W = 12, CELL_H = 16;
+const PALETTE = [
+  ['BLACK',0x0000],['WHITE',0xef5d],['DIM',0x738e],['PANEL',0x18e3],['ACCENT',0x07ff],
+  ['GREEN',0x07e0],['AMBER',0xfd20],['RED',0xf800],['BLUE',0x3c9f],['TEAL',0x4eae],
+  ['PURPLE',0xac9f],['PINK',0xed18],['YELLOW',0xff06],['ORANGE',0xfba5]];
+// Names as printed on the FM-1 faceplate (firmware index in brackets):
+// SELECT=encoders[0], ALGORITHM=[1], KNOB 1-4=[2..5], PRESETS=[6]; MASTER is the pot.
+const CONTROLS = ['SELECT','ALGORITHM','KNOB 1','KNOB 2','KNOB 3','KNOB 4','PRESETS',
+  'OCT-','OCT+','FX','SEL','ENV','LFO','EDIT','GLO','HOME','SAVE','ARP','SEQ','PLAY','REC',
+  'KEYS','MASTER','Combination','Other'];
+const ENC_NAMES = ['SELECT','ALGORITHM','KNOB 1','KNOB 2','KNOB 3','KNOB 4','PRESETS'];
+// Older saves and exports used ENC0-ENC6, "MASTER knob" and SCL (printed SEL on the panel).
+function renameControl(name) {
+  return String(name || '').replace(/\bENC([0-6])\b/g, (m, i) => ENC_NAMES[i]).replace(/\bMASTER knob\b/g, 'MASTER')
+    .replace(/^SCL$/, 'SEL');
+}
+function rgb565to888(v) {
+  const r = (v >> 11) & 31, g = (v >> 5) & 63, b = v & 31;
+  return [(r * 527 + 23) >> 6, (g * 259 + 33) >> 6, (b * 527 + 23) >> 6];
+}
+function rgb888to565(r, g, b) { return ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3); }
+function hex565(v) { return '0x' + v.toString(16).toUpperCase().padStart(4, '0'); }
+function css565(v) { const [r, g, b] = rgb565to888(v); return `rgb(${r},${g},${b})`; }
+function htmlColor(v) { return '#' + rgb565to888(v).map(n => n.toString(16).padStart(2, '0')).join(''); }
+function parse565(s) {
+  if (typeof s === 'number') return s & 0xffff;
+  const m = /^\s*(?:0x)?([0-9a-f]{1,4})\s*$/i.exec(String(s ?? ''));
+  return m ? parseInt(m[1], 16) : null;
+}
+function paletteName(v) { const p = PALETTE.find(p => p[1] === v); return p ? p[0] : null; }
+
+/* ---------- Element types ---------- */
+const DEFAULTS = {
+  text:  { type: 'text', name: 'Text', x: 0, y: 0, scale: 2, text: 'TEXT', color: 0xef5d, bg: null, bind: '', maxChars: 0, notes: '' },
+  rect:  { type: 'rect', name: 'Box', x: 0, y: 0, w: 60, h: 32, color: 0x18e3, fill: true, thickness: 1, notes: '' },
+  bar:   { type: 'bar', name: 'Bar', x: 0, y: 0, w: 120, h: 8, color: 0x07e0, bg: 0x18e3, border: null,
+           orientation: 'horizontal', value: 50, bind: '', notes: '' },
+  list:  { type: 'list', name: 'List', x: 0, y: 16, scale: 2, rows: 6, rowHeight: 16, maxChars: 20,
+           color: 0xef5d, bg: null, hlRow: -1, hlColor: 0x0000, hlBg: 0x07ff,
+           lines: 'LINE 1\nLINE 2\nLINE 3', bind: '', notes: '' }
+};
+const KIND = { text: 'text', rect: 'box', bar: 'bar', list: 'list' };
+function textBoxWidth(e) { return Math.max(e.text.length, e.maxChars || 0) * 6 * e.scale; }
+function bounds(e) {
+  switch (e.type) {
+    case 'text': return { x: e.x, y: e.y, w: Math.max(textBoxWidth(e), 6 * e.scale), h: 8 * e.scale };
+    case 'list': return { x: e.x, y: e.y, w: e.maxChars * 6 * e.scale, h: e.rows * e.rowHeight };
+    default: return { x: e.x, y: e.y, w: e.w, h: e.h };
+  }
+}
+const RESIZABLE = { rect: true, bar: true };
+
+/* ---------- State, storage, history ---------- */
+const STORE = 'fm1-screen-designer.v1';
+const state = { screens: [], currentId: null, selId: null, zoom: 3, grid: true, snap: 'cell' };
+let undoStack = [], redoStack = [];
+const uid = p => p + Math.random().toString(36).slice(2, 9);
+function cur() { return state.screens.find(s => s.id === state.currentId); }
+function sel() { const s = cur(); return s ? s.elements.find(e => e.id === state.selId) : null; }
+
+function sampleScreen() {
+  const s = { id: uid('s'), name: 'Home', notes: 'Default screen at startup; HOME returns here.\nScrolling MIDI monitor, newest at the bottom. Buffer holds 100 events.',
+    background: 0x0000, controls: [{ control: 'HOME', action: 'Go to this screen' }, { control: 'SELECT', action: 'Scroll monitor history' }], elements: [] };
+  const add = o => s.elements.push({ ...DEFAULTS[o.type], ...o, id: uid('e') });
+  add({ type: 'rect', name: 'Header bg', x: 0, y: 0, w: 240, h: 16, color: 0x18e3 });
+  add({ type: 'text', name: 'Title', x: 0, y: 0, text: 'HOME', color: 0x07ff, bg: null });
+  add({ type: 'text', name: 'Patch', x: 96, y: 0, text: 'P01 INIT', color: 0xef5d, bind: 'patch.label', maxChars: 12 });
+  add({ type: 'text', name: 'Columns', x: 0, y: 16, text: 'CH TYPE D1  D2', color: 0x738e });
+  add({ type: 'list', name: 'Monitor', x: 0, y: 32, rows: 11, maxChars: 20, bind: 'monitor.events',
+    lines: '01 NON C4   100\n01 NOF C4   0\n10 NON D2   127\n02 CC  7    64\n02 CC  7    70\n01 PB  64   0\n03 PC  12\n01 NON E4   90\n01 NOF E4   0\n16 CAT 45\n01 NON G4   88', hlRow: -1 });
+  for (let k = 0; k < 4; ++k) {
+    add({ type: 'text', name: `Knob ${k + 1} label`, x: k * 60, y: 208, text: `K${k + 1}CC`, color: 0x738e, bind: `knob${k + 1}.label`, maxChars: 5 });
+    add({ type: 'text', name: `Knob ${k + 1} value`, x: k * 60, y: 224, text: '127', color: 0xef5d, bind: `knob${k + 1}.value`, maxChars: 5 });
+  }
+  return s;
+}
+function blankScreen(name) {
+  return { id: uid('s'), name, notes: '', background: 0x0000, controls: [], elements: [] };
+}
+let saveTimer = null;
+function save() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(STORE, JSON.stringify({ screens: state.screens, currentId: state.currentId,
+        zoom: state.zoom, grid: state.grid, snap: state.snap }));
+      $('saved').textContent = 'Saved locally ' + new Date().toLocaleTimeString();
+    } catch (err) { $('saved').textContent = 'Not saved: browser storage unavailable'; }
+  }, 250);
+}
+function load() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (err) { data = null; }
+  if (data && Array.isArray(data.screens) && data.screens.length) {
+    state.screens = data.screens.map(normalizeScreen).filter(Boolean);
+    state.currentId = data.currentId;
+    state.zoom = [2, 3, 4].includes(data.zoom) ? data.zoom : 3;
+    state.grid = data.grid !== false;
+    state.snap = ['cell', 'half', 'pixel'].includes(data.snap) ? data.snap : 'cell';
+  }
+  if (!state.screens.length) state.screens = [sampleScreen()];
+  if (!cur()) state.currentId = state.screens[0].id;
+}
+function snapshot() { return JSON.stringify({ screens: state.screens, currentId: state.currentId, selId: state.selId }); }
+function pushHistory() {
+  undoStack.push(snapshot());
+  if (undoStack.length > 200) undoStack.shift();
+  redoStack = [];
+  updateUndo();
+}
+function restore(json) {
+  const d = JSON.parse(json);
+  state.screens = d.screens; state.currentId = d.currentId; state.selId = d.selId;
+  refreshAll(); save();
+}
+function undo() { if (!undoStack.length) return; redoStack.push(snapshot()); restore(undoStack.pop()); updateUndo(); }
+function redo() { if (!redoStack.length) return; undoStack.push(snapshot()); restore(redoStack.pop()); updateUndo(); }
+function updateUndo() { $('undo').disabled = !undoStack.length; $('redo').disabled = !redoStack.length; }
+
+/* ---------- Import / export ---------- */
+function normalizeElement(e) {
+  if (!e || !DEFAULTS[e.type]) return null;
+  const out = { ...DEFAULTS[e.type], ...e, id: e.id || uid('e') };
+  for (const k of ['color', 'bg', 'border', 'hlColor', 'hlBg']) {
+    if (k in out && out[k] !== null) { const v = parse565(out[k]); out[k] = v === null ? DEFAULTS[e.type][k] : v; }
+  }
+  if (Array.isArray(out.lines)) out.lines = out.lines.join('\n');
+  for (const k of ['x', 'y', 'w', 'h', 'scale', 'rows', 'rowHeight', 'maxChars', 'thickness', 'value', 'hlRow'])
+    if (k in out) out[k] = Number.isFinite(+out[k]) ? Math.round(+out[k]) : DEFAULTS[e.type][k];
+  out.scale = out.scale ? Math.min(4, Math.max(1, out.scale)) : out.scale;
+  return out;
+}
+function normalizeScreen(s) {
+  if (!s || !Array.isArray(s.elements)) return null;
+  return { id: s.id || uid('s'), name: String(s.name || 'Screen'), notes: String(s.notes || ''),
+    background: parse565(s.background) ?? 0,
+    controls: Array.isArray(s.controls) ? s.controls.map(c => ({ control: renameControl(c.control), action: String(c.action || '') })) : [],
+    elements: s.elements.map(normalizeElement).filter(Boolean) };
+}
+function exportElement(e) {
+  const o = { ...e };
+  for (const k of ['color', 'bg', 'border', 'hlColor', 'hlBg']) if (k in o && o[k] !== null) o[k] = hex565(o[k]);
+  if (o.type === 'list') o.lines = e.lines.split('\n');
+  for (const k of ['bind', 'notes']) if (k in o && !o[k]) delete o[k];
+  if (o.type === 'text' && !o.maxChars) delete o.maxChars;
+  return o;
+}
+function ascii(s) {
+  const grid = Array.from({ length: 15 }, () => Array(20).fill(' '));
+  const put = (x, y, text) => {
+    if (x % CELL_W || y % CELL_H) return;
+    const r = y / CELL_H; let c = x / CELL_W;
+    if (r < 0 || r >= 15) return;
+    for (const ch of text) { if (c >= 0 && c < 20) grid[r][c] = ch.toUpperCase(); c++; }
+  };
+  for (const e of s.elements) {
+    if (e.type === 'text' && e.scale === 2) put(e.x, e.y, e.text);
+    if (e.type === 'list' && e.scale === 2 && e.rowHeight === CELL_H)
+      e.lines.split('\n').slice(0, e.rows).forEach((l, i) => put(e.x, e.y + i * CELL_H, l.slice(0, e.maxChars)));
+  }
+  return grid.map(r => r.join('').replace(/\s+$/, ''));
+}
+function exportData() {
+  return {
+    format: 'fm1-screen-designer', version: 1, exported: new Date().toISOString(),
+    display: { width: W, height: H, colorFormat: 'RGB565',
+      font: 'FM1 5x7 (app/screen.c). Each character is 6*scale wide and 8*scale tall; the glyph starts floor(scale/2) px below the top. Lowercase is drawn as uppercase.',
+      grid: { cellWidth: CELL_W, cellHeight: CELL_H, columns: 20, rows: 15, note: 'Text at scale 2 fills exactly one cell per character.' } },
+    palette: Object.fromEntries(PALETTE.map(([n, v]) => [n, hex565(v)])),
+    screens: state.screens.map(s => ({
+      id: s.id, name: s.name, notes: s.notes, background: hex565(s.background), controls: s.controls,
+      elements: s.elements.map(exportElement),
+      ascii: ascii(s), asciiNote: 'Only grid-aligned 2x text and lists are shown.'
+    }))
+  };
+}
+function download(name, blob) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function importJson(text) {
+  let data;
+  try { data = JSON.parse(text); } catch (err) { alert('That file is not valid JSON.'); return; }
+  const screens = (Array.isArray(data) ? data : data.screens || []).map(normalizeScreen).filter(Boolean);
+  if (!screens.length) { alert('No screens found in that file.'); return; }
+  pushHistory();
+  const ids = new Set(state.screens.map(s => s.id));
+  for (const s of screens) { if (ids.has(s.id)) { s.id = uid('s'); s.name += ' (imported)'; } state.screens.push(s); }
+  state.currentId = screens[0].id; state.selId = null;
+  refreshAll(); save();
+}
+
+/* ---------- Rendering ---------- */
+const $ = id => document.getElementById(id);
+const view = $('view'), ctx = view.getContext('2d');
+const off = document.createElement('canvas'); off.width = W; off.height = H;
+const offCtx = off.getContext('2d');
+const image = offCtx.createImageData(W, H);
+const px = new Uint32Array(image.data.buffer);
+function abgr(v) { const [r, g, b] = rgb565to888(v); return (255 << 24) | (b << 16) | (g << 8) | r; }
+function fill(x, y, w, h, v) {
+  const c = abgr(v), x0 = Math.max(0, x), y0 = Math.max(0, y), x1 = Math.min(W, x + w), y1 = Math.min(H, y + h);
+  for (let yy = y0; yy < y1; ++yy) for (let xx = x0; xx < x1; ++xx) px[yy * W + xx] = c;
+}
+function outline(x, y, w, h, t, v) {
+  fill(x, y, w, t, v); fill(x, y + h - t, w, t, v); fill(x, y, t, h, v); fill(x + w - t, y, t, h, v);
+}
+function drawText(x, y, str, scale, color, bg, maxChars) {
+  const n = maxChars ? Math.min(str.length, maxChars) : str.length;
+  const top = Math.floor(scale / 2);
+  if (bg !== null && bg !== undefined) fill(x, y, Math.max(n, maxChars || 0) * 6 * scale, 8 * scale, bg);
+  for (let i = 0; i < n; ++i) {
+    const shape = glyph(str[i]), cx = x + i * 6 * scale;
+    for (let col = 0; col < 5; ++col)
+      for (let row = 0; row < 7; ++row)
+        if (shape[col] & (1 << row)) fill(cx + col * scale, y + top + row * scale, scale, scale, color);
+  }
+}
+function drawElement(e) {
+  switch (e.type) {
+    case 'text': drawText(e.x, e.y, e.text, e.scale, e.color, e.bg, e.maxChars); break;
+    case 'rect': e.fill ? fill(e.x, e.y, e.w, e.h, e.color) : outline(e.x, e.y, e.w, e.h, Math.max(1, e.thickness), e.color); break;
+    case 'bar': {
+      if (e.bg !== null) fill(e.x, e.y, e.w, e.h, e.bg);
+      const v = Math.max(0, Math.min(100, e.value)) / 100;
+      if (e.orientation === 'vertical') { const h = Math.round(e.h * v); fill(e.x, e.y + e.h - h, e.w, h, e.color); }
+      else fill(e.x, e.y, Math.round(e.w * v), e.h, e.color);
+      if (e.border !== null) outline(e.x, e.y, e.w, e.h, 1, e.border);
+      break;
+    }
+    case 'list': {
+      const lines = e.lines.split('\n');
+      for (let r = 0; r < e.rows; ++r) {
+        const y = e.y + r * e.rowHeight, hl = r === e.hlRow;
+        if (hl) fill(e.x, y, e.maxChars * 6 * e.scale, e.rowHeight, e.hlBg);
+        else if (e.bg !== null) fill(e.x, y, e.maxChars * 6 * e.scale, e.rowHeight, e.bg);
+        drawText(e.x, y + Math.floor((e.rowHeight - 8 * e.scale) / 2), lines[r] || '', e.scale, hl ? e.hlColor : e.color, null, e.maxChars);
+      }
+      break;
+    }
+  }
+}
+function render() {
+  const s = cur(); if (!s) return;
+  px.fill(abgr(s.background));
+  for (const e of s.elements) drawElement(e);
+  offCtx.putImageData(image, 0, 0);
+  const z = state.zoom;
+  if (view.width !== W * z) { view.width = W * z; view.height = H * z; }
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(off, 0, 0, W * z, H * z);
+  if (state.grid) {
+    ctx.strokeStyle = 'rgba(80,160,255,0.18)'; ctx.lineWidth = 1; ctx.beginPath();
+    for (let x = CELL_W; x < W; x += CELL_W) { ctx.moveTo(x * z + .5, 0); ctx.lineTo(x * z + .5, H * z); }
+    for (let y = CELL_H; y < H; y += CELL_H) { ctx.moveTo(0, y * z + .5); ctx.lineTo(W * z, y * z + .5); }
+    ctx.stroke();
+  }
+  for (const e of s.elements) if (problems(e).length) {
+    const b = bounds(e); ctx.strokeStyle = 'rgba(229,83,75,.8)'; ctx.setLineDash([2, 2]);
+    ctx.strokeRect(b.x * z + .5, b.y * z + .5, b.w * z - 1, b.h * z - 1); ctx.setLineDash([]);
+  }
+  const e = sel();
+  if (e) {
+    const b = bounds(e);
+    ctx.strokeStyle = '#2fc4d8'; ctx.lineWidth = 2; ctx.setLineDash([5, 3]);
+    ctx.strokeRect(b.x * z - 1, b.y * z - 1, b.w * z + 2, b.h * z + 2); ctx.setLineDash([]);
+    if (RESIZABLE[e.type]) { ctx.fillStyle = '#2fc4d8'; ctx.fillRect((b.x + b.w) * z - 5, (b.y + b.h) * z - 5, 10, 10); }
+  }
+}
+
+/* ---------- Validation ---------- */
+function problems(e) {
+  const out = [], b = bounds(e);
+  if (b.x < 0 || b.y < 0 || b.x + b.w > W || b.y + b.h > H) out.push('Extends past the 240×240 screen.');
+  const texts = e.type === 'text' ? [e.text] : e.type === 'list' ? e.lines.split('\n') : [];
+  const bad = new Set();
+  for (const t of texts) for (const ch of t) if (!supported(ch)) bad.add(ch);
+  if (bad.size) out.push('Not in the font (drawn blank): ' + [...bad].map(c => JSON.stringify(c)).join(' '));
+  if (e.type === 'text' && e.maxChars && e.text.length > e.maxChars) out.push(`Sample text is longer than max chars (${e.maxChars}).`);
+  if (e.type === 'list') {
+    const n = e.lines.split('\n').length;
+    if (n > e.rows) out.push(`${n - e.rows} sample line(s) beyond the visible rows are hidden.`);
+    if (e.rowHeight < 8 * e.scale) out.push(`Row height is less than the text height (${8 * e.scale} px).`);
+  }
+  return out;
+}
+
+/* ---------- Panels ---------- */
+function refreshAll() { renderScreens(); renderLayers(); renderProps(); renderControls(); render(); updateUndo(); }
+function renderScreens() {
+  const box = $('screenList'); box.textContent = '';
+  for (const s of state.screens) {
+    const d = document.createElement('div');
+    d.className = 'item' + (s.id === state.currentId ? ' active' : '');
+    const n = document.createElement('span'); n.className = 'nm'; n.textContent = s.name || '(unnamed)';
+    d.append(n);
+    d.onclick = () => { state.currentId = s.id; state.selId = null; refreshAll(); save(); };
+    box.append(d);
+  }
+  $('screenDel').disabled = state.screens.length < 2;
+}
+function renderLayers() {
+  const box = $('layerList'); box.textContent = '';
+  const s = cur();
+  [...s.elements].reverse().forEach(e => {
+    const d = document.createElement('div');
+    d.className = 'item' + (e.id === state.selId ? ' active' : '');
+    const k = document.createElement('span'); k.className = 'kind'; k.textContent = KIND[e.type];
+    const n = document.createElement('span'); n.className = 'nm'; n.textContent = e.name + (e.bind ? `  {${e.bind}}` : '');
+    d.append(k, n);
+    if (problems(e).length) { const w = document.createElement('span'); w.className = 'warn'; w.textContent = '!'; w.title = problems(e).join('\n'); d.append(w); }
+    d.onclick = () => { state.selId = e.id; renderLayers(); renderProps(); render(); };
+    box.append(d);
+  });
+  if (!s.elements.length) { const h = document.createElement('div'); h.className = 'hint'; h.textContent = 'No elements yet. Use Add in the toolbar.'; box.append(h); }
+  const none = !sel();
+  for (const id of ['layerUp', 'layerDown', 'layerDup', 'layerDel']) $(id).disabled = none;
+}
+function row(table, label, ...nodes) {
+  const tr = table.insertRow(), a = tr.insertCell(), b = tr.insertCell();
+  a.className = 'lbl'; a.textContent = label;
+  const wrap = document.createElement('div'); wrap.className = 'inline'; wrap.append(...nodes); b.append(wrap);
+  return tr;
+}
+let editing = false;
+function beginEdit() { if (!editing) { pushHistory(); editing = true; } }
+function endEdit() { editing = false; }
+function changed(full) { if (full) renderProps(); renderLayers(); render(); renderWarnings(); save(); }
+function inputFor(obj, key, kind, opts = {}) {
+  let el;
+  if (kind === 'textarea') { el = document.createElement('textarea'); el.rows = opts.rows || 4; el.value = obj[key]; }
+  else if (kind === 'select') {
+    el = document.createElement('select');
+    for (const [v, t] of opts.options) { const o = document.createElement('option'); o.value = v; o.textContent = t; el.append(o); }
+    el.value = String(obj[key]);
+  } else if (kind === 'bool') { el = document.createElement('input'); el.type = 'checkbox'; el.checked = !!obj[key]; }
+  else { el = document.createElement('input'); el.type = kind === 'int' ? 'number' : 'text'; el.value = obj[key];
+    if (kind === 'int') { if (opts.min !== undefined) el.min = opts.min; if (opts.max !== undefined) el.max = opts.max; if (opts.step) el.step = opts.step; } }
+  if (opts.placeholder) el.placeholder = opts.placeholder;
+  el.addEventListener('focus', beginEdit); el.addEventListener('blur', endEdit);
+  const apply = () => {
+    beginEdit();
+    if (kind === 'int') { let v = parseInt(el.value, 10); if (!Number.isFinite(v)) return;
+      if (opts.min !== undefined) v = Math.max(opts.min, v); if (opts.max !== undefined) v = Math.min(opts.max, v); obj[key] = v; }
+    else if (kind === 'bool') obj[key] = el.checked;
+    else if (kind === 'select') obj[key] = opts.numeric ? +el.value : el.value;
+    else obj[key] = el.value;
+    if (kind === 'bool' || kind === 'select') endEdit();
+    changed(opts.full);
+  };
+  el.addEventListener(kind === 'bool' || kind === 'select' ? 'change' : 'input', apply);
+  return el;
+}
+function colorInput(obj, key, allowNone) {
+  const wrap = document.createElement('div');
+  const line = document.createElement('div'); line.className = 'inline';
+  const none = document.createElement('input'); none.type = 'checkbox';
+  const picker = document.createElement('input'); picker.type = 'color';
+  const hex = document.createElement('input'); hex.type = 'text'; hex.className = 'hex';
+  const name = document.createElement('span'); name.className = 'hint';
+  const swatches = document.createElement('div'); swatches.className = 'swatches';
+  const sync = () => {
+    const v = obj[key], off = v === null;
+    none.checked = off; picker.disabled = hex.disabled = off;
+    if (!off) { picker.value = htmlColor(v); if (document.activeElement !== hex) hex.value = hex565(v); name.textContent = paletteName(v) || 'custom'; }
+    else { name.textContent = 'transparent'; }
+    [...swatches.children].forEach(b => b.classList.toggle('on', !off && +b.dataset.v === v));
+  };
+  const set = v => { beginEdit(); obj[key] = v; endEdit(); sync(); changed(false); };
+  if (allowNone) {
+    const l = document.createElement('label'); l.className = 'inline'; l.append(none, document.createTextNode('none'));
+    none.onchange = () => set(none.checked ? null : 0xef5d); line.append(l);
+  }
+  picker.oninput = () => { const h = picker.value; set(rgb888to565(parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16))); };
+  hex.oninput = () => { const v = parse565(hex.value); if (v !== null) { beginEdit(); obj[key] = v; sync(); changed(false); } };
+  hex.onblur = () => { endEdit(); sync(); };
+  for (const [n, v] of PALETTE) {
+    const b = document.createElement('button'); b.className = 'swatch'; b.title = `${n} ${hex565(v)}`;
+    b.style.background = css565(v); b.dataset.v = v; b.onclick = () => set(v); swatches.append(b);
+  }
+  line.append(picker, hex, name); wrap.append(line, swatches); sync();
+  return wrap;
+}
+function renderProps() {
+  const t = $('props'); t.textContent = '';
+  const e = sel(), s = cur();
+  if (!e) {
+    $('propsTitle').textContent = 'Screen';
+    row(t, 'Name', inputFor(s, 'name', 'text', {}));
+    t.lastChild.querySelector('input').addEventListener('input', renderScreens);
+    row(t, 'Background', colorInput(s, 'background', false));
+    row(t, 'Notes', inputFor(s, 'notes', 'textarea', { rows: 6, placeholder: 'Purpose, navigation, behaviour, edge cases…' }));
+    renderWarnings(); return;
+  }
+  $('propsTitle').textContent = KIND[e.type] + ' properties';
+  row(t, 'Name', inputFor(e, 'name', 'text', {}));
+  row(t, 'Position', document.createTextNode('x'), inputFor(e, 'x', 'int', { min: -240, max: 480 }),
+    document.createTextNode('y'), inputFor(e, 'y', 'int', { min: -240, max: 480 }));
+  if (e.type === 'rect' || e.type === 'bar')
+    row(t, 'Size', document.createTextNode('w'), inputFor(e, 'w', 'int', { min: 1, max: 240 }),
+      document.createTextNode('h'), inputFor(e, 'h', 'int', { min: 1, max: 240 }));
+  if (e.type === 'text') {
+    row(t, 'Text', inputFor(e, 'text', 'text', {}));
+    row(t, 'Scale', inputFor(e, 'scale', 'select', { numeric: true, options: [[1, '1× (6×8)'], [2, '2× (12×16)'], [3, '3× (18×24)'], [4, '4× (24×32)']] }));
+    row(t, 'Color', colorInput(e, 'color', false));
+    row(t, 'Background', colorInput(e, 'bg', true));
+    row(t, 'Bind to', inputFor(e, 'bind', 'text', { placeholder: 'e.g. patch.name (empty = static)' }));
+    row(t, 'Max chars', inputFor(e, 'maxChars', 'int', { min: 0, max: 40 }), Object.assign(document.createElement('span'), { className: 'hint', textContent: '0 = sample length' }));
+  }
+  if (e.type === 'rect') {
+    row(t, 'Color', colorInput(e, 'color', false));
+    row(t, 'Filled', inputFor(e, 'fill', 'bool', { full: true }));
+    if (!e.fill) row(t, 'Thickness', inputFor(e, 'thickness', 'int', { min: 1, max: 20 }));
+  }
+  if (e.type === 'bar') {
+    row(t, 'Direction', inputFor(e, 'orientation', 'select', { options: [['horizontal', 'Horizontal (fills right)'], ['vertical', 'Vertical (fills up)']] }));
+    row(t, 'Preview %', inputFor(e, 'value', 'int', { min: 0, max: 100 }));
+    row(t, 'Fill color', colorInput(e, 'color', false));
+    row(t, 'Track color', colorInput(e, 'bg', true));
+    row(t, 'Border', colorInput(e, 'border', true));
+    row(t, 'Bind to', inputFor(e, 'bind', 'text', { placeholder: 'e.g. lfo1.value' }));
+  }
+  if (e.type === 'list') {
+    row(t, 'Rows', inputFor(e, 'rows', 'int', { min: 1, max: 60 }), document.createTextNode('row h'), inputFor(e, 'rowHeight', 'int', { min: 4, max: 64 }));
+    row(t, 'Scale', inputFor(e, 'scale', 'select', { numeric: true, options: [[1, '1×'], [2, '2×'], [3, '3×'], [4, '4×']] }));
+    row(t, 'Max chars', inputFor(e, 'maxChars', 'int', { min: 1, max: 40 }));
+    row(t, 'Sample lines', inputFor(e, 'lines', 'textarea', { rows: 6 }));
+    row(t, 'Text color', colorInput(e, 'color', false));
+    row(t, 'Row bg', colorInput(e, 'bg', true));
+    row(t, 'Highlight row', inputFor(e, 'hlRow', 'int', { min: -1, max: 59 }), Object.assign(document.createElement('span'), { className: 'hint', textContent: '-1 = none (cursor preview)' }));
+    row(t, 'Highlight text', colorInput(e, 'hlColor', false));
+    row(t, 'Highlight bg', colorInput(e, 'hlBg', false));
+    row(t, 'Bind to', inputFor(e, 'bind', 'text', { placeholder: 'e.g. monitor.events' }));
+  }
+  row(t, 'Notes', inputFor(e, 'notes', 'textarea', { rows: 3, placeholder: 'Behaviour, formatting, ranges…' }));
+  renderWarnings();
+}
+function renderWarnings() {
+  const e = sel(), s = cur();
+  const list = e ? problems(e) : s.elements.flatMap(x => problems(x).map(p => `${x.name}: ${p}`));
+  $('warnings').textContent = list.join('\n');
+  $('warnings').style.whiteSpace = 'pre-line';
+}
+function renderControls() {
+  const t = $('controlsTable'); t.textContent = '';
+  const s = cur();
+  if (!s.controls.length) {
+    const tr = t.insertRow(), td = tr.insertCell(); td.className = 'hint';
+    td.textContent = 'What each encoder and button does here, e.g. SELECT → scroll, SAVE → store patch.';
+  }
+  s.controls.forEach((c, i) => {
+    const tr = t.insertRow();
+    const a = tr.insertCell(), b = tr.insertCell(), d = tr.insertCell();
+    const known = CONTROLS.includes(c.control);
+    const pick = document.createElement('select');
+    for (const n of CONTROLS) { const o = document.createElement('option'); o.textContent = n; pick.append(o); }
+    pick.value = known ? c.control : 'Other';
+    const custom = document.createElement('input'); custom.type = 'text'; custom.placeholder = 'e.g. HOME + PRESETS';
+    custom.value = known ? '' : c.control; custom.style.display = known && c.control !== 'Combination' && c.control !== 'Other' ? 'none' : '';
+    pick.onfocus = beginEdit; pick.onchange = () => { c.control = pick.value; endEdit(); renderControls(); save(); };
+    custom.onfocus = beginEdit; custom.onblur = endEdit; custom.oninput = () => { c.control = custom.value || pick.value; save(); };
+    const wrap = document.createElement('div'); wrap.className = 'inline'; wrap.append(pick, custom); a.append(wrap);
+    const act = document.createElement('input'); act.type = 'text'; act.value = c.action; act.placeholder = 'Action';
+    act.onfocus = beginEdit; act.onblur = endEdit; act.oninput = () => { c.action = act.value; save(); };
+    b.append(act);
+    const del = document.createElement('button'); del.className = 'danger'; del.textContent = '×'; del.title = 'Remove';
+    del.onclick = () => { pushHistory(); s.controls.splice(i, 1); renderControls(); save(); };
+    d.append(del); d.style.width = '32px';
+  });
+}
+
+/* ---------- Actions ---------- */
+function addElement(kind) {
+  const s = cur(); pushHistory();
+  const type = kind === 'value' ? 'text' : kind;
+  const e = { ...DEFAULTS[type], id: uid('e') };
+  if (kind === 'value') Object.assign(e, { name: 'Value', text: '127', bind: 'value', maxChars: 3, color: 0x07e0 });
+  const used = new Set(s.elements.map(x => x.y));
+  let y = 16; while (used.has(y) && y < 224) y += 16;
+  e.y = type === 'list' ? 16 : y;
+  e.name = `${e.name} ${s.elements.filter(x => x.type === type).length + 1}`;
+  s.elements.push(e); state.selId = e.id;
+  refreshAll(); save();
+}
+function deleteSelected() {
+  const s = cur(), e = sel(); if (!e) return;
+  pushHistory(); s.elements = s.elements.filter(x => x !== e); state.selId = null; refreshAll(); save();
+}
+function duplicateSelected() {
+  const s = cur(), e = sel(); if (!e) return;
+  pushHistory();
+  const c = { ...JSON.parse(JSON.stringify(e)), id: uid('e'), name: e.name + ' copy', x: e.x + snapStep().x, y: e.y + snapStep().y };
+  s.elements.splice(s.elements.indexOf(e) + 1, 0, c); state.selId = c.id; refreshAll(); save();
+}
+function moveLayer(dir) {
+  const s = cur(), e = sel(); if (!e) return;
+  const i = s.elements.indexOf(e), j = i + dir;
+  if (j < 0 || j >= s.elements.length) return;
+  pushHistory(); s.elements.splice(i, 1); s.elements.splice(j, 0, e); refreshAll(); save();
+}
+function snapStep() { return state.snap === 'cell' ? { x: CELL_W, y: CELL_H } : state.snap === 'half' ? { x: 6, y: 8 } : { x: 1, y: 1 }; }
+function snapTo(v, step) { return Math.round(v / step) * step; }
+
+/* ---------- Mouse ---------- */
+let drag = null;
+function pointer(ev) { const r = view.getBoundingClientRect(); return { x: (ev.clientX - r.left) / state.zoom, y: (ev.clientY - r.top) / state.zoom }; }
+function hit(p) {
+  const s = cur();
+  for (let i = s.elements.length - 1; i >= 0; --i) {
+    const b = bounds(s.elements[i]);
+    if (p.x >= b.x && p.x < b.x + b.w && p.y >= b.y && p.y < b.y + b.h) return s.elements[i];
+  }
+  return null;
+}
+view.addEventListener('mousedown', ev => {
+  const p = pointer(ev), e = sel();
+  if (e && RESIZABLE[e.type]) {
+    const b = bounds(e), hs = 6 / state.zoom;
+    if (Math.abs(p.x - (b.x + b.w)) <= hs && Math.abs(p.y - (b.y + b.h)) <= hs) { drag = { mode: 'resize', e, moved: false }; return; }
+  }
+  const h = hit(p);
+  state.selId = h ? h.id : null;
+  if (h) drag = { mode: 'move', e: h, dx: p.x - h.x, dy: p.y - h.y, moved: false };
+  renderLayers(); renderProps(); render();
+});
+window.addEventListener('mousemove', ev => {
+  const p = pointer(ev);
+  const inside = p.x >= 0 && p.y >= 0 && p.x < W && p.y < H;
+  $('status').textContent = inside ? `x ${Math.floor(p.x)}  y ${Math.floor(p.y)}   ·   col ${Math.floor(p.x / CELL_W)}  row ${Math.floor(p.y / CELL_H)}` : ' ';
+  if (!drag) {
+    const e = sel(); let cursor = 'default';
+    if (inside) {
+      if (e && RESIZABLE[e.type]) { const b = bounds(e), hs = 6 / state.zoom;
+        if (Math.abs(p.x - (b.x + b.w)) <= hs && Math.abs(p.y - (b.y + b.h)) <= hs) cursor = 'nwse-resize'; }
+      if (cursor === 'default' && hit(p)) cursor = 'move';
+    }
+    view.style.cursor = cursor; return;
+  }
+  const step = ev.altKey ? { x: 1, y: 1 } : snapStep();
+  if (!drag.moved) { pushHistory(); drag.moved = true; }
+  if (drag.mode === 'move') { drag.e.x = snapTo(p.x - drag.dx, step.x); drag.e.y = snapTo(p.y - drag.dy, step.y); }
+  else { drag.e.w = Math.max(1, snapTo(p.x - drag.e.x, step.x)); drag.e.h = Math.max(1, snapTo(p.y - drag.e.y, step.y)); }
+  render(); renderWarnings();
+});
+window.addEventListener('mouseup', () => { if (drag && drag.moved) { renderProps(); renderLayers(); save(); } drag = null; });
+
+/* ---------- Keyboard ---------- */
+window.addEventListener('keydown', ev => {
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+  const mod = ev.ctrlKey || ev.metaKey;
+  if (mod && ev.key.toLowerCase() === 'z' && !typing) { ev.preventDefault(); ev.shiftKey ? redo() : undo(); return; }
+  if (mod && ev.key.toLowerCase() === 'y' && !typing) { ev.preventDefault(); redo(); return; }
+  if (typing) return;
+  const e = sel();
+  if (ev.key === 'Escape') { state.selId = null; refreshAll(); return; }
+  if (!e) return;
+  if (ev.key === 'Delete' || ev.key === 'Backspace') { ev.preventDefault(); deleteSelected(); return; }
+  if (mod && ev.key.toLowerCase() === 'd') { ev.preventDefault(); duplicateSelected(); return; }
+  const dirs = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+  if (dirs[ev.key]) {
+    ev.preventDefault();
+    const st = ev.shiftKey ? snapStep() : { x: 1, y: 1 };
+    pushHistory(); e.x += dirs[ev.key][0] * st.x; e.y += dirs[ev.key][1] * st.y;
+    renderProps(); render(); renderLayers(); save();
+  }
+});
+
+/* ---------- Wiring ---------- */
+document.querySelectorAll('[data-add]').forEach(b => b.onclick = () => addElement(b.dataset.add));
+$('undo').onclick = undo; $('redo').onclick = redo;
+$('zoom').onchange = () => { state.zoom = +$('zoom').value; render(); save(); };
+$('grid').onchange = () => { state.grid = $('grid').checked; render(); save(); };
+$('snap').onchange = () => { state.snap = $('snap').value; save(); };
+$('layerUp').onclick = () => moveLayer(1); $('layerDown').onclick = () => moveLayer(-1);
+$('layerDup').onclick = duplicateSelected; $('layerDel').onclick = deleteSelected;
+$('controlAdd').onclick = () => { pushHistory(); cur().controls.push({ control: 'SELECT', action: '' }); renderControls(); save(); };
+$('screenNew').onclick = () => {
+  pushHistory(); const s = blankScreen('Screen ' + (state.screens.length + 1));
+  state.screens.push(s); state.currentId = s.id; state.selId = null; refreshAll(); save();
+};
+$('screenDup').onclick = () => {
+  pushHistory(); const src = cur(); const s = JSON.parse(JSON.stringify(src));
+  s.id = uid('s'); s.name = src.name + ' copy'; s.elements.forEach(e => e.id = uid('e'));
+  state.screens.splice(state.screens.indexOf(src) + 1, 0, s); state.currentId = s.id; state.selId = null; refreshAll(); save();
+};
+function moveScreen(dir) {
+  const i = state.screens.indexOf(cur()), j = i + dir;
+  if (j < 0 || j >= state.screens.length) return;
+  pushHistory(); const [s] = state.screens.splice(i, 1); state.screens.splice(j, 0, s); renderScreens(); save();
+}
+$('screenUp').onclick = () => moveScreen(-1); $('screenDown').onclick = () => moveScreen(1);
+$('screenDel').onclick = () => {
+  if (state.screens.length < 2) return;
+  const s = cur();
+  if (!confirm(`Delete screen "${s.name}"? (Undo can restore it.)`)) return;
+  pushHistory(); const i = state.screens.indexOf(s); state.screens.splice(i, 1);
+  state.currentId = state.screens[Math.max(0, i - 1)].id; state.selId = null; refreshAll(); save();
+};
+$('export').onclick = () => download('fm1-screens.json', new Blob([JSON.stringify(exportData(), null, 2)], { type: 'application/json' }));
+$('copy').onclick = async () => {
+  const text = JSON.stringify(exportData(), null, 2);
+  try { await navigator.clipboard.writeText(text); $('saved').textContent = 'JSON copied to clipboard'; }
+  catch (err) { download('fm1-screens.json', new Blob([text], { type: 'application/json' })); }
+};
+$('import').onclick = () => $('importFile').click();
+$('importFile').onchange = async () => {
+  const f = $('importFile').files[0]; if (!f) return;
+  importJson(await f.text()); $('importFile').value = '';
+};
+$('png').onclick = () => {
+  const c = document.createElement('canvas'); c.width = W * 3; c.height = H * 3;
+  const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(off, 0, 0, W * 3, H * 3);
+  const name = (cur().name || 'screen').replace(/[^\w.-]+/g, '_');
+  c.toBlob(b => download(`fm1-${name}.png`, b), 'image/png');
+};
+
+load();
+$('zoom').value = String(state.zoom); $('grid').checked = state.grid; $('snap').value = state.snap;
+refreshAll();
+</script>
+</body>
+</html>
