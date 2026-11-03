@@ -41,6 +41,28 @@ MIDI from **TRS MIDI IN** and **USB** passes through a pipeline and comes out of
 - **Patches:** 16 named patches.
   - Every setting can be dumped and loaded over SysEx, for backup and editing on a computer.
 
+## Latency
+
+Measured on 2026-11-03 with version 0.1.0 (build `a8c8fd4918ca4038`), using `tools/latency_test.py`. The FM-1 was connected over USB to a Windows 11 PC. Notes were sent to the FM-1's USB input and timed on their way back from its USB output.
+
+**Inside the FM-1:** from a message arriving to the processed message being handed to USB.
+
+| Test | Messages | Mean | Max | Lost |
+|---|---|---|---|---|
+| Single notes | 2,000 | 0.13 ms | 0.47 ms | 0 |
+| Bursts of 8 notes | 4,800 | 0.18 ms | 0.79 ms | 0 |
+
+Every message took under 0.5 ms with single notes, and under 1 ms in bursts.
+
+**Round trip:** PC → FM-1 → PC. This includes the PC's own USB MIDI handling in both directions, so most of the time is spent on the computer.
+
+| Test | Probes | Min | Median | 95% | 99% | Max |
+|---|---|---|---|---|---|---|
+| Single notes | 1,000 | 0.28 ms | 0.50 ms | 1.01 ms | 1.84 ms | 3.66 ms |
+| Bursts of 8 notes, whole burst | 300 | 1.02 ms | 1.91 ms | 3.33 ms | 4.02 ms | 6.25 ms |
+
+To repeat the test, close other MIDI software and run `python tools/latency_test.py`. Add `--burst 8` for bursts and `--count` to set the number of probes. Needs `python-rtmidi`.
+
 ## MIDI Connections
 
 The [DoReMidi USB MIDI Host Box](https://www.doremidi.cn/h-pd-36.html) can be used to provide DIN MIDI in/out ports for the FM-1. With the USB Host Box, you have 2 inputs (1 DIN and 1 TRS) and 1 DIN output. The USB Host Box will also power the FM-1.
