@@ -69,6 +69,7 @@ details summary { cursor: pointer; color: var(--dim); }
   </div>
   <dl class="kv" id="fw-info" hidden>
     <dt>Firmware</dt><dd id="fw-name"></dd>
+    <dt>Version</dt><dd id="fw-version"></dd>
     <dt>Identity</dt><dd id="fw-product"></dd>
     <dt>Build</dt><dd id="fw-build"></dd>
     <dt>Built</dt><dd id="fw-date"></dd>
@@ -201,7 +202,7 @@ async function preparePackage(raw, meta, source) {
   check(OPEN_IDENTITY.test(pkg.product), `The package identity ${pkg.product} is not an Open-based firmware.`);
   if (meta.product) check(meta.product === pkg.product, 'The package identity does not match its manifest.');
   const vendor = await sha256(pkg.loader) === VENDOR_LOADER_SHA;
-  return { ...pkg, build_id: meta.build_id, bytes: raw.length, source, built: meta.built || '',
+  return { ...pkg, build_id: meta.build_id, bytes: raw.length, source, built: meta.built || '', version: meta.version || '',
     name: meta.name || source, loaderIdentity: vendor ? 'ota-FM-1_015' : 'ota-FM1C_' + meta.build_id.slice(0, 16) };
 }
 
@@ -514,6 +515,7 @@ function updateInstall() {
 function showPackage(p) {
   pkg = p;
   $('fw-name').textContent = p.name;
+  $('fw-version').textContent = p.version || '—';
   $('fw-product').textContent = p.product;
   $('fw-build').textContent = p.build_id.slice(0, 16);
   $('fw-date').textContent = p.built || '—';

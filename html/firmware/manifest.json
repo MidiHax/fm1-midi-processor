@@ -1,6 +1,7 @@
 {
   "schema": 1,
   "name": "FM-1 MIDI Processor",
+  "version": "0.1.0",
   "file": "FM1-MidiProc.fwsc",
   "product": "FM-1_8000014",
   "release_version": "V14",

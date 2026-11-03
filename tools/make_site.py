@@ -12,6 +12,8 @@ font. The drawing code is the same as tools/screen-designer.html.
 Firmware: copies src/build/dx7/generated/FM1_OFFICIAL_OPEN.fwsc to
 html/firmware/FM1-MidiProc.fwsc and writes html/firmware/manifest.json,
 which html/flash.html loads. Run build.bat (or fm1_flash.py --build) first.
+It also rewrites the README's firmware section (between the
+<!-- firmware --> markers): version, build, size, SHA-256 and download link.
 
 Standard library only.
 """
@@ -27,6 +29,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+README = ROOT / 'README.md'
+REPO_RAW = 'https://github.com/MidiHax/fm1-midi-processor/raw/main/'
 SCREENS = ROOT / 'design/fm1-screens.json'
 SITE = ROOT / 'html'
 BUILD = ROOT / 'src/build/dx7'
@@ -181,6 +185,7 @@ def make_firmware():
     ident = json.loads(identity.read_text(encoding='utf-8-sig'))
     version_h = (ROOT / 'src/app/version.h').read_text(encoding='utf-8')
     product = re.search(r'#define FM1_UPDATE_PRODUCT "([^"]+)"', version_h).group(1)
+    version = re.search(r'#define MIDIPROC_VERSION "([^"]+)"', version_h).group(1)
     raw = package.read_bytes()
     out = SITE / 'firmware'
     out.mkdir(parents=True, exist_ok=True)
@@ -188,6 +193,7 @@ def make_firmware():
     manifest = {
         'schema': 1,
         'name': 'FM-1 MIDI Processor',
+        'version': version,
         'file': 'FM1-MidiProc.fwsc',
         'product': product,
         'release_version': ident['release_version'],
@@ -198,7 +204,30 @@ def make_firmware():
         'built': datetime.fromtimestamp(package.stat().st_mtime, timezone.utc).strftime('%Y-%m-%d %H:%M UTC'),
     }
     (out / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
-    print(f'  html/firmware/FM1-MidiProc.fwsc  {len(raw)} bytes  build {ident["build_id"][:16]}')
+    print(f'  html/firmware/FM1-MidiProc.fwsc  {len(raw)} bytes  version {version}  build {ident["build_id"][:16]}')
+    update_readme(manifest)
+
+
+def update_readme(m):
+    """Rewrite the README's firmware section from the manifest."""
+    text = README.read_text(encoding='utf-8')
+    block = (
+        '<!-- firmware: written by tools/make_site.py --firmware -->\n'
+        f'**Latest version: {m["version"]}** (build `{m["build_id"][:16]}`, {m["built"]})\n'
+        '\n'
+        f'- **[FM1-MidiProc.fwsc]({REPO_RAW}html/firmware/{m["file"]})**: the compiled firmware package, '
+        f'{m["bytes"]:,} bytes, for use with your own flasher.\n'
+        f'- SHA-256: `{m["sha256"]}`\n'
+        f'- Update identity `{m["product"]}`, FM1 Open SDK family {m["family"]}. '
+        f'Details in [manifest.json]({REPO_RAW}html/firmware/manifest.json).\n'
+        '<!-- /firmware -->')
+    new, n = re.subn(r'<!-- firmware[^>]*-->.*?<!-- /firmware -->', lambda _: block, text, flags=re.S)
+    if n != 1:
+        print('  README.md: firmware markers not found, not updated')
+        return
+    if new != text:
+        README.write_text(new, encoding='utf-8')
+    print('  README.md firmware section updated')
 
 
 def main():

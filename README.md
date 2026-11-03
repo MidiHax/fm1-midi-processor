@@ -5,6 +5,16 @@ Custom firmware that turns the **M-VAVE FM-1** into a stand-alone MIDI processor
 - **[Help guide](https://midihax.github.io/fm1-midi-processor/html/)**: how every page and control works, with screen captures.
 - **[Flash the firmware](https://midihax.github.io/fm1-midi-processor/html/flash.html)**: install it from desktop Chrome or Edge over USB. No software to install.
 
+## Firmware
+
+<!-- firmware: written by tools/make_site.py --firmware -->
+**Latest version: 0.1.0** (build `a8c8fd4918ca4038`, 2026-11-03 12:40 UTC)
+
+- **[FM1-MidiProc.fwsc](https://github.com/MidiHax/fm1-midi-processor/raw/main/html/firmware/FM1-MidiProc.fwsc)**: the compiled firmware package, 459,316 bytes, for use with your own flasher.
+- SHA-256: `b75f2630e1462a3e4f512c59021cef7bd547c5daafa41e4a62f80cde20a35039`
+- Update identity `FM-1_8000014`, FM1 Open SDK family 7. Details in [manifest.json](https://github.com/MidiHax/fm1-midi-processor/raw/main/html/firmware/manifest.json).
+<!-- /firmware -->
+
 ## What it does
 
 MIDI from **TRS MIDI IN** and **USB** passes through a pipeline and comes out of **USB MIDI OUT**:
