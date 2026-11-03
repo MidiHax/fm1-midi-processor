@@ -10,12 +10,16 @@ Custom firmware that turns the **M-VAVE FM-1** into a stand-alone MIDI processor
 ## Firmware
 
 <!-- firmware: written by tools/make_site.py --firmware -->
-**Latest version: 0.1.0** (build `a8c8fd4918ca4038`, 2026-11-03 12:40 UTC)
+**Latest version: 0.1.0** (build `d120f8ed27c9d6b5`, 2026-11-03 14:53 UTC)
 
 - **[FM1-MidiProc.fwsc](https://github.com/MidiHax/fm1-midi-processor/raw/main/html/firmware/FM1-MidiProc.fwsc)**: the compiled firmware package, 459,316 bytes, for use with your own flasher.
-- SHA-256: `b75f2630e1462a3e4f512c59021cef7bd547c5daafa41e4a62f80cde20a35039`
+- SHA-256: `4c119da121c813cd5f882390b9e1f3a474d92993207f3305d914090716c22834`
 - Update identity `FM-1_8000014`, FM1 Open SDK family 7. Details in [manifest.json](https://github.com/MidiHax/fm1-midi-processor/raw/main/html/firmware/manifest.json).
 <!-- /firmware -->
+
+[![Build firmware](https://github.com/MidiHax/fm1-midi-processor/actions/workflows/build.yml/badge.svg)](https://github.com/MidiHax/fm1-midi-processor/actions/workflows/build.yml)
+
+GitHub builds the firmware from source on every change, with JieLi's 2.5.3 compiler. The build is byte-for-byte identical to the file above. Each run's firmware is available under [Actions](https://github.com/MidiHax/fm1-midi-processor/actions/workflows/build.yml), and tagged versions are under [Releases](https://github.com/MidiHax/fm1-midi-processor/releases).
 
 ## What it does
 

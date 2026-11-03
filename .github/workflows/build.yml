@@ -1,0 +1,132 @@
+# Builds the FM-1 MIDI Processor firmware on GitHub's Windows machines.
+#
+# The JieLi 2.5.3 compiler is downloaded from JieLi's own server, checked
+# against a fixed SHA-256, and unpacked with innoextract (the installer is
+# never run). src/build.bat then checks every compiler file against
+# src/sdk/manifest.json, so the result is the same firmware, byte for byte,
+# as a local build of the same commit.
+#
+# Every run uploads the firmware as an artifact. Pushing a tag such as
+# v0.1.0 also creates a GitHub Release with the firmware attached.
+name: Build firmware
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths: ['src/**', '.github/workflows/build.yml', 'html/firmware/manifest.json']
+  pull_request:
+    paths: ['src/**', '.github/workflows/build.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  JIELI_URL: https://jl-update.oss-cn-shenzhen.aliyuncs.com/2.5.3.exe
+  JIELI_SHA256: 399bd518a28e47a7a0394506cebd5bf658748a58cd6b7c02512e24b4b88c5a5e
+  INNOEXTRACT_URL: https://constexpr.org/innoextract/files/innoextract-1.9-windows.zip
+  INNOEXTRACT_SHA256: 6989342c9b026a00a72a38f23b62a8e6a22cc5de69805cf47d68ac2fec993065
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    outputs:
+      build_id: ${{ steps.report.outputs.build_id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache the compiler downloads
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}\downloads
+          key: jieli-2.5.3-${{ env.JIELI_SHA256 }}-innoextract-${{ env.INNOEXTRACT_SHA256 }}
+
+      - name: Get the JieLi 2.5.3 compiler
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dl = Join-Path $env:RUNNER_TEMP 'downloads'
+          New-Item -ItemType Directory -Force $dl | Out-Null
+          function Get-Checked($url, $name, $sha) {
+            $file = Join-Path $dl $name
+            if (!(Test-Path $file) -or (Get-FileHash $file -Algorithm SHA256).Hash -ne $sha) {
+              Write-Host "Downloading $url"
+              Invoke-WebRequest $url -OutFile $file -MaximumRetryCount 3 -RetryIntervalSec 10
+            }
+            $got = (Get-FileHash $file -Algorithm SHA256).Hash
+            if ($got -ne $sha) { throw "$name has SHA-256 $got, expected $sha" }
+            return $file
+          }
+          $installer = Get-Checked $env:JIELI_URL 'jieli-2.5.3.exe' $env:JIELI_SHA256
+          $zip = Get-Checked $env:INNOEXTRACT_URL 'innoextract.zip' $env:INNOEXTRACT_SHA256
+
+          $tools = Join-Path $env:RUNNER_TEMP 'innoextract'
+          Expand-Archive $zip -DestinationPath $tools -Force
+          $out = Join-Path $env:RUNNER_TEMP 'jieli'
+          & (Join-Path $tools 'innoextract.exe') --silent --output-dir $out $installer
+          if ($LASTEXITCODE) { throw "innoextract failed ($LASTEXITCODE)" }
+
+          $tc = Join-Path $out 'C$\JL\pi32'   # the installer's default C:\JL\pi32
+          if (!(Test-Path (Join-Path $tc 'bin\clang.exe'))) { throw "clang.exe not found under $tc" }
+          & (Join-Path $tc 'bin\clang.exe') --version | Select-Object -First 1
+          "FM1_PI32_TOOLCHAIN=$tc" >> $env:GITHUB_ENV
+
+      - name: Build
+        shell: cmd
+        run: call src\build.bat
+
+      - name: Report the build
+        id: report
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $id = (Get-Content src/build/dx7/build-identity.json -Raw | ConvertFrom-Json).build_id
+          $fw = 'src/build/dx7/generated/FM1_OFFICIAL_OPEN.fwsc'
+          $sha = (Get-FileHash $fw -Algorithm SHA256).Hash.ToLowerInvariant()
+          $version = [regex]::Match((Get-Content src/app/version.h -Raw), '#define MIDIPROC_VERSION "([^"]+)"').Groups[1].Value
+          "build_id=$id" >> $env:GITHUB_OUTPUT
+          New-Item -ItemType Directory -Force out | Out-Null
+          Copy-Item $fw out/FM1-MidiProc.fwsc
+          Copy-Item src/build/dx7/build-identity.json out/
+          Copy-Item src/build/updater/FM1-MidiProc-Updater.html out/
+
+          # Does the firmware published on the site come from this commit?
+          $site = Get-Content html/firmware/manifest.json -Raw | ConvertFrom-Json
+          $match = if ($site.build_id -eq $id) { 'yes' } else { "no (site has $($site.build_id.Substring(0, 16)))" }
+          if ($site.build_id -ne $id) { Write-Host "::notice title=Site firmware differs::html/firmware is build $($site.build_id.Substring(0, 16)); this commit builds $($id.Substring(0, 16)). Run tools/make_site.py --firmware after a local build to publish it." }
+          @(
+            "### FM-1 MIDI Processor $version",
+            '',
+            '| | |', '|---|---|',
+            "| Build | ``$($id.Substring(0, 16))`` |",
+            "| SHA-256 | ``$sha`` |",
+            "| Size | $((Get-Item $fw).Length) bytes |",
+            "| Same as html/firmware | $match |"
+          ) -join "`n" >> $env:GITHUB_STEP_SUMMARY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FM1-MidiProc-${{ github.sha }}
+          path: out/
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            out/FM1-MidiProc.fwsc
+            out/build-identity.json
+            out/FM1-MidiProc-Updater.html
+          generate_release_notes: true
