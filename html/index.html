@@ -187,39 +187,64 @@ main { min-width: 0; }
 
 <!-- ===================================================================== -->
 <h2 id="flow">The MIDI pipeline</h2>
-<p>Every message from TRS or USB goes through the same stages, in this order. Each stage is set per patch.</p>
-<svg class="diagram" viewBox="0 0 1000 230" role="img" aria-labelledby="flow-title flow-desc">
+<p>Every message from TRS or USB goes through the same stages, in this order. The filters are set separately for each input port, and every stage is part of the patch. The labels in italics give the colour each outcome has in the <a href="#monitor">monitor</a>.</p>
+<svg class="diagram flow" viewBox="0 0 1040 380" role="img" aria-labelledby="flow-title flow-desc">
   <title id="flow-title">Pipeline</title>
-  <desc id="flow-desc">TRS and USB input go to the Channel Filter, then the Message Filter. Event triggers watch the messages there. Messages continue to Message Remap, then Channel Remap, then USB MIDI OUT. Trigger messages and knob CCs go straight to USB MIDI OUT.</desc>
+  <desc id="flow-desc">TRS MIDI IN and USB MIDI IN each pass their own Channel Filter and Message Filter, set per input port. The two streams then join and pass Message Remap and Channel Remap to USB MIDI OUT. Event Triggers watch the messages after the filters and send their messages straight to USB MIDI OUT, unfiltered and unremapped. Knob CCs and Live Keys notes also go straight to USB MIDI OUT. In the monitor, blocked messages are grey, remapped ones dark yellow, and ones that fired a trigger teal.</desc>
   <defs>
-    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="head" d="M0 0 L10 5 L0 10 z"/></marker>
+    <marker id="arr-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="head-p" d="M0 0 L10 5 L0 10 z"/></marker>
     <style>
-      .fbox{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
-      .fbox.hl{stroke:var(--accent);stroke-width:2}
-      .ft{fill:var(--text);font-size:15px;font-weight:600;text-anchor:middle}
-      .fs{fill:var(--dim);font-size:12px;text-anchor:middle}
-      .fl{stroke:var(--dim);stroke-width:1.6;fill:none;color:var(--dim)}
-      .fl.acc{stroke:var(--accent);color:var(--accent);stroke-dasharray:5 4}
+      .flow { --pink: #bf3989; }
+      @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .flow { --pink: #db61a2; } }
+      :root[data-theme="dark"] .flow { --pink: #db61a2; }
+      .flow text { text-anchor: middle; }
+      .flow .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+      .flow .io { fill: var(--panel); stroke: var(--accent); stroke-width: 2; }
+      .flow .side { fill: var(--panel); stroke: var(--pink); stroke-width: 2; }
+      .flow .t { fill: var(--text); font-size: 16px; font-weight: 600; }
+      .flow .s { fill: var(--dim); font-size: 13px; }
+      .flow .note { fill: var(--dim); font-size: 13px; font-style: italic; }
+      .flow .lane { fill: none; stroke: var(--line); stroke-width: 1; stroke-dasharray: 4 4; }
+      .flow .lane-t { fill: var(--dim); font-size: 12px; font-weight: 600; letter-spacing: .06em; text-anchor: start; }
+      .flow .ln { fill: none; stroke: var(--dim); stroke-width: 2; }
+      .flow .direct { fill: none; stroke: var(--pink); stroke-width: 2; stroke-dasharray: 6 5; }
+      .flow .head { fill: var(--dim); }
+      .flow .head-p { fill: var(--pink); }
+      .flow .dot { fill: var(--dim); }
     </style>
   </defs>
-  <rect class="fbox" x="10" y="40" width="110" height="60" rx="8"/><text class="ft" x="65" y="66">TRS / USB</text><text class="fs" x="65" y="85">MIDI IN</text>
-  <rect class="fbox" x="150" y="40" width="130" height="60" rx="8"/><text class="ft" x="215" y="66">Channel</text><text class="fs" x="215" y="85">Filter</text>
-  <rect class="fbox" x="310" y="40" width="130" height="60" rx="8"/><text class="ft" x="375" y="66">Message</text><text class="fs" x="375" y="85">Filter</text>
-  <rect class="fbox" x="490" y="40" width="130" height="60" rx="8"/><text class="ft" x="555" y="66">Message</text><text class="fs" x="555" y="85">Remap</text>
-  <rect class="fbox" x="650" y="40" width="130" height="60" rx="8"/><text class="ft" x="715" y="66">Channel</text><text class="fs" x="715" y="85">Remap</text>
-  <rect class="fbox hl" x="840" y="40" width="150" height="60" rx="8"/><text class="ft" x="915" y="66">USB MIDI</text><text class="fs" x="915" y="85">OUT</text>
-  <path class="fl" d="M120 70 H146" marker-end="url(#arr)"/><path class="fl" d="M280 70 H306" marker-end="url(#arr)"/>
-  <path class="fl" d="M440 70 H486" marker-end="url(#arr)"/><path class="fl" d="M620 70 H646" marker-end="url(#arr)"/>
-  <path class="fl" d="M780 70 H836" marker-end="url(#arr)"/>
-  <circle cx="465" cy="70" r="5" fill="var(--accent)"/>
-  <path class="fl acc" d="M465 75 V160" />
-  <rect class="fbox hl" x="400" y="160" width="130" height="56" rx="8"/><text class="ft" x="465" y="184">Event</text><text class="fs" x="465" y="202">Triggers</text>
-  <path class="fl acc" d="M530 188 H915 V104" marker-end="url(#arr)"/>
-  <text class="fs" x="720" y="180">trigger messages: not filtered or remapped</text>
-  <text class="fs" x="215" y="126">blocked → grey</text>
-  <text class="fs" x="375" y="126">blocked → grey</text>
-  <text class="fs" x="635" y="126">remapped → dark yellow</text>
-  <text class="fs" x="300" y="200" style="text-anchor:end">fired a trigger → teal</text>
+  <rect class="lane" x="168" y="18" width="314" height="196" rx="10"/>
+  <text class="lane-t" x="180" y="38">FILTERS · SET PER INPUT PORT</text>
+  <rect class="io" x="20" y="54" width="120" height="56" rx="8"/><text class="t" x="80" y="78">TRS</text><text class="s" x="80" y="97">MIDI IN</text>
+  <rect class="box" x="180" y="54" width="130" height="56" rx="8"/><text class="t" x="245" y="78">Channel</text><text class="s" x="245" y="97">Filter</text>
+  <rect class="box" x="340" y="54" width="130" height="56" rx="8"/><text class="t" x="405" y="78">Message</text><text class="s" x="405" y="97">Filter</text>
+  <rect class="io" x="20" y="144" width="120" height="56" rx="8"/><text class="t" x="80" y="168">USB</text><text class="s" x="80" y="187">MIDI IN</text>
+  <rect class="box" x="180" y="144" width="130" height="56" rx="8"/><text class="t" x="245" y="168">Channel</text><text class="s" x="245" y="187">Filter</text>
+  <rect class="box" x="340" y="144" width="130" height="56" rx="8"/><text class="t" x="405" y="168">Message</text><text class="s" x="405" y="187">Filter</text>
+  <path class="ln" d="M140 82 H176" marker-end="url(#arr)"/>
+  <path class="ln" d="M310 82 H336" marker-end="url(#arr)"/>
+  <path class="ln" d="M140 172 H176" marker-end="url(#arr)"/>
+  <path class="ln" d="M310 172 H336" marker-end="url(#arr)"/>
+  <text class="note" x="325" y="236">blocked → grey</text>
+  <path class="ln" d="M470 82 H500 Q520 82 520 102 V127"/>
+  <path class="ln" d="M470 172 H500 Q520 172 520 152 V127"/>
+  <circle class="dot" cx="520" cy="127" r="5"/>
+  <path class="ln" d="M520 127 H556" marker-end="url(#arr)"/>
+  <rect class="box" x="560" y="99" width="130" height="56" rx="8"/><text class="t" x="625" y="123">Message</text><text class="s" x="625" y="142">Remap</text>
+  <rect class="box" x="720" y="99" width="130" height="56" rx="8"/><text class="t" x="785" y="123">Channel</text><text class="s" x="785" y="142">Remap</text>
+  <rect class="io" x="880" y="99" width="140" height="56" rx="8"/><text class="t" x="950" y="123">USB</text><text class="s" x="950" y="142">MIDI OUT</text>
+  <path class="ln" d="M690 127 H716" marker-end="url(#arr)"/>
+  <path class="ln" d="M850 127 H876" marker-end="url(#arr)"/>
+  <text class="note" x="705" y="180">remapped → dark yellow</text>
+  <path class="direct" d="M520 132 V242" marker-end="url(#arr-p)"/>
+  <rect class="side" x="455" y="246" width="130" height="56" rx="8"/><text class="t" x="520" y="270">Event</text><text class="s" x="520" y="289">Triggers</text>
+  <text class="note" x="443" y="279" style="text-anchor:end">fired a trigger → teal</text>
+  <path class="direct" d="M585 274 H925 V159" marker-end="url(#arr-p)"/>
+  <text class="note" x="755" y="266">trigger messages: not filtered or remapped</text>
+  <rect class="side" x="180" y="306" width="290" height="56" rx="8"/><text class="t" x="325" y="330">Knobs · Live Keys</text><text class="s" x="325" y="349">sent from the FM-1's panel</text>
+  <path class="direct" d="M470 334 H985 V159" marker-end="url(#arr-p)"/>
+  <text class="note" x="755" y="326">straight to the output</text>
 </svg>
 <ul>
   <li><strong>Filters</strong> drop messages: first by channel, then by type.</li>
