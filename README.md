@@ -48,6 +48,9 @@ TRS / USB in → Channel Filter → Message Filter → Message Remap → Channel
 
 The [DoReMidi USB MIDI Host Box](https://www.doremidi.cn/h-pd-36.html) can be used to provide DIN MIDI in/out ports for the FM-1. With the USB Host Box, you have 2 inputs (1 DIN and 1 TRS) and 1 DIN output. The USB Host Box will also power the FM-1.
 
+> [!NOTE]
+> MIDI from the host box's DIN input reaches the FM-1 over USB. So on the FM-1 it appears as the USB port (U in the monitor).
+
 ![DoReMidi USB MIDI Host Box](html/img/doremidi-usb-host-sm.jpg)
 
 ## Repository
