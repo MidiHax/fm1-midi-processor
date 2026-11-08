@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "name": "FM-1 MIDI Processor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "file": "FM1-MidiProc.fwsc",
   "product": "FM-1_8000014",
   "release_version": "V14",
-  "build_id": "d4079567ee6dbf5244e839e8c9139df012ebe90ff496acb87c3435e3aa12d1f7",
+  "build_id": "087a3bd28c4796c2e613db746160d90a6ec5d4e27db6501a615b01ab8749440c",
   "family": 7,
   "bytes": 459316,
-  "sha256": "b151cddabd2302b44168491cd6d01a452f4972e5b1a8875ed09ac276da2bc911",
-  "built": "2026-11-08 21:01 UTC"
+  "sha256": "6db5666338123414de23f11a1a79fa0e38c9f3a3e67203c66aa04b2aa126a871",
+  "built": "2026-11-08 21:07 UTC"
 }
