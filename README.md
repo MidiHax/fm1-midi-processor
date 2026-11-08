@@ -6,6 +6,7 @@ Custom firmware that turns the **M-VAVE FM-1** into a stand-alone MIDI processor
 
 - **[Help guide](https://midihax.github.io/fm1-midi-processor/html/)**: how every page and control works, with screen captures.
 - **[Flash the firmware](https://midihax.github.io/fm1-midi-processor/html/flash.html)**: install it from desktop Chrome or Edge over USB. No software to install.
+- **[Patch editor](https://midihax.github.io/fm1-midi-processor/html/editor.html)**: edit patches from desktop Chrome or Edge over USB.
 
 ## Firmware
 
@@ -83,7 +84,7 @@ The [DoReMidi USB MIDI Host Box](https://www.doremidi.cn/h-pd-36.html) can be us
 | `src/` | Firmware, built on the [FM1 Open SDK](https://github.com/m-vave/fm1_open) |
 | `tools/` | USB flasher (`fm1_flash.py`), patch SysEx tool, screen designer, site builder, tests |
 | `design/` | Screen designs, design decisions, patch and SysEx format |
-| `html/` | The help site and flash page, published with GitHub Pages |
+| `html/` | The help site, flash page and patch editor, published with GitHub Pages |
 
 To build the firmware, you need the JieLi PI32 toolchain. Run:
 

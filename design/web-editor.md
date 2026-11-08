@@ -2,7 +2,7 @@
 
 A page that edits the MIDI Processor's patches from a computer: filters, remaps, triggers, knobs and Live Keys, over USB, with no software to install.
 
-**Draft, not built.** Items marked **Q** were questions; all five are decided and are listed at the end. The format it edits is in `patch-format.md`.
+**Built** (`html/editor.html`), except the status command in build step 5. The codec is tested against the firmware's own code (`tools/host_tests/codec`). Writing to a real FM-1 from the page is not yet tested. Items marked **Q** were questions; all five are decided and are listed at the end. The format it edits is in `patch-format.md`.
 
 ---
 

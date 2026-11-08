@@ -36,4 +36,15 @@ cl /nologo /W3 /O2 /std:c11 /D_CRT_SECURE_NO_WARNINGS monitor_test.c monitor.c m
 if errorlevel 1 (type build.log & popd & exit /b 1)
 popd
 "%MON%\monitor_test.exe" || set FAILED=1
+
+rem codec\: the web editor's patch codec (html\patch-codec.js) on its own, then
+rem its test vectors through the real patch.c, remap.c and triggers.c.
+set "COD=%OUT%\codec"
+if not exist "%COD%" mkdir "%COD%"
+node "%~dp0codec\codec_test.js" "%COD%\vectors.txt" || set FAILED=1
+pushd "%COD%"
+cl /nologo /W3 /O2 /std:c11 /D_CRT_SECURE_NO_WARNINGS /FI "%~dp0codec\msvc_compat.h" /I "%~dp0..\..\src\app" /I "%~dp0..\..\src\sdk\include" "%~dp0codec\firmware_check.c" "%~dp0..\..\src\app\patch.c" "%~dp0..\..\src\app\remap.c" "%~dp0..\..\src\app\triggers.c" /Fe:firmware_check.exe > build.log 2>&1
+if errorlevel 1 (type build.log & popd & exit /b 1)
+popd
+"%COD%\firmware_check.exe" "%COD%\vectors.txt" || set FAILED=1
 if defined FAILED exit /b 1

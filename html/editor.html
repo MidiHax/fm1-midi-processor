@@ -1,0 +1,829 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception -->
+<!-- Web patch editor. Design: design/web-editor.md. Format: design/patch-format.md. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FM-1 Patch Editor</title>
+<meta name="description" content="Edit FM-1 MIDI Processor patches from the browser, over USB MIDI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Doto:wght@400..900&display=swap">
+<link rel="stylesheet" href="crt.css">
+<style>
+  :root { --crt-h: 35; }
+  html, body { background: var(--crt-bg-0); margin: 0; }
+  .band { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .grow { flex: 1 1 auto; min-width: 0; }
+  .top { padding-block: 10px; display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; justify-content: space-between; }
+  h1 { margin: 0; font-size: 28px; line-height: 1; }
+  .layout { display: grid; grid-template-columns: 210px minmax(0, 1fr) 250px; gap: 14px; padding-block: 14px; align-items: start; }
+  .stack { display: grid; gap: 14px; min-width: 0; }
+  @media (max-width: 1080px) { .layout { grid-template-columns: 190px minmax(0, 1fr); } .side { grid-column: 1 / -1; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); } }
+  @media (max-width: 720px) { .layout { grid-template-columns: minmax(0, 1fr); } .bank-list { max-height: 190px; overflow-y: auto; } }
+
+  .bank-list { display: grid; }
+  .slot { display: grid; grid-template-columns: 24px 1fr 10px; gap: 6px; align-items: center; width: 100%; padding: 3px 8px; font: inherit; font-size: 13px; text-align: left; color: var(--crt-ink-3); background: none; border: 0; border-bottom: 1px solid var(--crt-bg-2); cursor: pointer; }
+  .slot:hover { color: var(--crt-acc-lt); }
+  .slot[aria-current="true"] { background: var(--crt-sel-bg); color: var(--crt-ink); }
+  .slot b { font-weight: 400; color: var(--crt-acc-dim); font-variant-numeric: tabular-nums; }
+  .slot .named { color: var(--crt-ink-2); }
+  .slot[aria-current="true"] .named { color: var(--crt-ink); }
+
+  .name { width: 15ch; flex: none; font-family: var(--crt-font); font-weight: 800; font-size: 18px; letter-spacing: .08em; color: var(--crt-acc-br); }
+  .target { width: 112px; flex: none; }
+  .spacer { flex: 1 1 8px; }
+
+  .pipe-wrap { overflow-x: auto; }
+  .pipe { display: flex; align-items: stretch; gap: 0; min-width: 780px; }
+  .node, .step { display: grid; gap: 1px; align-content: center; }
+  .node { padding: 0 8px; text-align: center; color: var(--crt-ink-3); font-size: 11px; letter-spacing: .08em; }
+  .node strong { color: var(--crt-acc); font-size: 12px; }
+  .wire { flex: none; align-self: center; width: 16px; height: 2px; background: var(--crt-acc-dim); position: relative; }
+  .wire::after { content: ""; position: absolute; right: -1px; top: -3px; border-left: 5px solid var(--crt-acc-dim); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+  .step { flex: 1 1 0; min-width: 0; padding: 6px 8px; font: inherit; text-align: left; color: var(--crt-ink-2); background: var(--crt-btn-face); cursor: pointer; border: 1px solid; border-color: var(--crt-bevel) var(--crt-shadow) var(--crt-shadow) var(--crt-bevel); box-shadow: 2px 2px 0 #00000080; }
+  .step:hover { color: var(--crt-acc-lt); }
+  .step[aria-pressed="true"] { background: var(--crt-sel-bg); color: var(--crt-ink); border-color: var(--crt-shadow) var(--crt-bevel) var(--crt-bevel) var(--crt-shadow); box-shadow: none; }
+  .step .t { display: flex; justify-content: space-between; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .step .s { font-size: 11px; color: var(--crt-ink-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .step.apart { flex: 0 0 104px; margin-left: 14px; }
+
+  .scroll { overflow-x: auto; }
+  .mx { display: grid; grid-template-columns: 58px repeat(16, minmax(25px, 1fr)); gap: 2px; min-width: 520px; }
+  .mx.wide { grid-template-columns: 58px repeat(16, minmax(25px, 1fr)) 92px; min-width: 620px; }
+  .h { display: flex; align-items: center; justify-content: center; height: 22px; font: inherit; font-size: 11px; color: var(--crt-acc); background: none; border: 0; padding: 0; font-variant-numeric: tabular-nums; }
+  button.h { cursor: pointer; } button.h:hover { color: var(--crt-acc-lt); background: var(--crt-bg-2); }
+  .h.l { justify-content: flex-start; letter-spacing: .06em; }
+  .c { height: 24px; padding: 0; font: inherit; font-size: 11px; cursor: pointer; color: var(--crt-ink-3); background-color: var(--crt-bg-well); background-image: repeating-conic-gradient(var(--crt-sel-bg) 0% 25%, transparent 0% 50%); background-size: 4px 4px; border: 1px solid; border-color: var(--crt-shadow) var(--crt-line-lt2) var(--crt-line-lt2) var(--crt-shadow); }
+  .c:hover { border-color: var(--crt-acc); }
+  .c[aria-pressed="true"] { background: var(--crt-btn); background-image: none; color: var(--crt-ink); box-shadow: inset 0 0 6px var(--crt-acc); }
+  .c.route { background-image: none; }
+  .c.route.diag { background-color: var(--crt-bg-2); }
+  .c.route[aria-pressed="true"] { background: var(--crt-acc); box-shadow: 0 0 7px var(--crt-acc); }
+  .sys { display: grid; grid-template-columns: repeat(10, minmax(42px, 1fr)); gap: 2px; min-width: 460px; }
+  .sys .c { height: 42px; display: grid; align-content: center; justify-items: center; gap: 1px; }
+  .sys .c b { font-weight: 700; letter-spacing: .04em; }
+  .mx.text { grid-template-columns: 58px repeat(16, minmax(38px, 1fr)); min-width: 700px; }
+  .mx.text.wide { grid-template-columns: 58px repeat(16, minmax(38px, 1fr)) 92px; min-width: 790px; }
+  .mx.text .c { font-size: 10px; }
+  .c:not([aria-pressed="true"]) span, .c:not([aria-pressed="true"]) b { background: var(--crt-bg-well); padding: 0 2px; }
+  .c:not([aria-pressed="true"]) span { color: var(--crt-danger); }
+  .c[aria-pressed="true"] span { color: var(--crt-ink); font-weight: 700; }
+
+  .crt-table input, .crt-table select { height: 24px; min-width: 50px; }
+  .crt-table td.note { color: var(--crt-acc-dim); font-size: 12px; white-space: nowrap; min-width: 40px; }
+  .crt-table tr.bad td { box-shadow: inset 0 1px 0 var(--crt-danger), inset 0 -1px 0 var(--crt-danger); }
+  .mini { height: 24px; width: 26px; padding: 0; flex: none; }
+  .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 10px 12px; }
+  .fields label { display: grid; gap: 2px; min-width: 0; }
+  .two { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 14px; align-items: start; }
+  @media (max-width: 1240px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .knobs { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+  .hint { margin: 0; font-size: 12px; color: var(--crt-ink-3); max-width: 72ch; }
+  .gap { display: grid; gap: 12px; }
+
+  .cap { display: grid; gap: 7px; }
+  .cap .r { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .06em; color: var(--crt-ink-3); font-variant-numeric: tabular-nums; }
+  .cap .r span:last-child { color: var(--crt-ink-2); }
+  .cap .crt-meter > i { height: 7px; }
+  .issues { display: grid; gap: 6px; font-size: 12px; margin: 0; padding: 0; list-style: none; }
+  .issues li { display: grid; grid-template-columns: 8px 1fr; gap: 8px; align-items: baseline; }
+  .log { height: 158px; overflow-y: auto; font-size: 11px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .crt-footer-inner { max-width: none; }
+  .band.top { max-width: none; }
+  .conn .crt-field { width: auto; }
+  .conn input.crt-field { width: 58px; }
+  .bankbar { padding: 8px; gap: 6px; border-bottom: 1px solid var(--crt-line); }
+  .bankbar .crt-btn { flex: 1 1 auto; padding: 0 6px; font-size: 11px; }
+  .notice { display: flex; gap: 8px; align-items: baseline; font-size: 13px; min-height: 36px; }
+  .notice .crt-led { position: relative; top: -1px; }
+  .actions { display: contents; }
+  .crt-footer-inner a.crt-footer-link { white-space: nowrap; }
+</style>
+</head>
+<body class="crt crt-scanlines">
+<header class="crt-header"><div class="band top">
+  <h1 class="crt-display">FM-1 PATCH EDITOR</h1>
+  <div id="conn" class="row conn"></div>
+</div></header>
+
+<main class="band layout">
+  <aside class="crt-panel">
+    <div class="crt-titlebar"><span>Bank</span></div>
+    <div id="bankbar" class="row bankbar"></div>
+    <nav id="bank" class="bank-list" aria-label="Patches"></nav>
+  </aside>
+  <div class="stack">
+    <section class="crt-panel"><div class="crt-panel-body row">
+      <input class="crt-field name" id="pname" maxlength="12" autocomplete="off" spellcheck="false" aria-label="Patch name">
+      <div id="actions" class="actions"></div>
+    </div></section>
+    <div id="notice" class="crt-well notice" role="status"></div>
+    <div class="pipe-wrap"><div id="pipe" class="pipe"></div></div>
+    <section class="crt-panel"><div class="crt-titlebar"><span id="vt"></span></div><div id="view" class="crt-panel-body"></div></section>
+  </div>
+  <aside class="stack side">
+    <section class="crt-panel"><div class="crt-titlebar"><span>Capacity</span></div><div id="cap" class="crt-panel-body cap"></div></section>
+    <section class="crt-panel"><div class="crt-titlebar"><span>Problems</span></div><div class="crt-panel-body"><ul id="issues" class="issues"></ul></div></section>
+    <section class="crt-panel"><div class="crt-titlebar"><span>Transfer log</span></div><div class="crt-panel-body"><div id="log" class="crt-well crt-glow log" role="log"></div></div></section>
+  </aside>
+</main>
+
+<footer class="crt-footer"><div class="crt-footer-inner band">
+  <p>Runs in your browser. Patches stay here and on your FM-1.</p>
+  <nav aria-label="Project links"><a class="crt-footer-link" href="index.html">Help</a> <a class="crt-footer-link" href="flash.html">Flash firmware</a> <a class="crt-footer-link" href="https://github.com/MidiHax/fm1-midi-processor">Source</a></nav>
+</div></footer>
+<input type="file" id="file" accept=".syx" hidden>
+
+<script src="patch-codec.js"></script>
+<script>
+'use strict';
+const C = PatchCodec;
+const { PORTS, SYS, VOICE, REMAP, TRIG, LIM, msgKey } = C;
+const EDIT = C.EDIT;
+
+/* Timing: design/web-editor.md, "Sending" and "Read-back". */
+const GAP_MS = 5, REPLY_IDLE_MS = 1500, OPEN_SETTLE_MS = 50, QUIET_MS = 100, STORE_MS_PER_SLOT = 100, ARM_MS = 5000, LIVE_MS = 150;
+const NO_REPLY = 'No reply. Check ALLOW DUMP REQ and DEVICE ID on the Sysex Dump page.';
+const STORE_KEY = 'fm1-patch-editor';
+
+const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const note = n => NOTES[n % 12] + (Math.floor(n / 12) - 1);
+const clone = o => JSON.parse(JSON.stringify(o));
+const pad = (n, w) => String(n).padStart(w, '0');
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const hex = a => a.map(v => v.toString(16).toUpperCase().padStart(2, '0')).join(' ');
+class LinkError extends Error {}
+
+/* ---- Documents ------------------------------------------------------------
+ * One per source: the edit buffer, each slot, and any opened file. Each keeps
+ * its draft (work), what the device last held (base) and its own undo. */
+const docs = {};
+function newDoc(patch, extra) {
+  return { work: clone(patch), base: clone(patch), undo: [], redo: [], readOnly: false, read: false, ...extra };
+}
+docs.edit = newDoc(C.blankPatch(0));
+for (let i = 0; i < C.PATCHES; i++) docs[i] = newDoc(C.blankPatch(i));
+
+/* The bytes the device last gave for each source. */
+const device = { edit: null, slots: Array(C.PATCHES).fill(null) };
+const deviceBody = src => (src === 'edit' ? device.edit : device.slots[src]);
+
+const S = {
+  access: null, pairs: [], port: '', device: 0, answered: false, busy: false, livePending: false,
+  armed: null, target: 0, notice: null, files: 0,
+};
+const ui = { src: 'edit', view: 'chf', port: 1, trig: 0, mrPort: -1, live: false };
+let link = null;
+let D = docs.edit, P = D.work;
+
+const logLines = [];
+function log(s) { logLines.push(s); if (logLines.length > 60) logLines.shift(); }
+function say(sev, text) { S.notice = { sev, text }; if (sev === 'red') log('! ' + text); }
+
+const SECTIONS = { chf: ['ch'], msgf: ['sys', 'voice'], trig: ['trig'], mr: ['msgRules'], cr: ['chRules'], ctl: ['knobs', 'live'] };
+/* Compared the way the firmware stores them: rule order doesn't count. */
+const sectionText = (p, k) => JSON.stringify(k === 'msgRules' ? [...p.msgRules].sort((a, b) => msgKey(a) - msgKey(b))
+  : k === 'chRules' ? [...p.chRules].sort((a, b) => a.port - b.port || a.in - b.in) : p[k]);
+const edited = (d, keys) => keys.some(k => sectionText(d.work, k) !== sectionText(d.base, k));
+const isDirty = d => !C.sameBytes(C.encode(d.work), C.encode(d.base));
+const dupRows = () => C.duplicateRules(P);
+const problems = () => C.validate(P);
+const hasErrors = patch => C.validate(patch).some(i => i.sev === 'red');
+const slotLabel = src => (src === 'edit' ? 'EDIT BUFFER' : typeof src === 'number' ? 'SLOT ' + pad(src + 1, 2) : 'FILE');
+
+function mutate(fn) {
+  if (D.readOnly) { say('amber', 'This patch comes from a newer firmware, so it opens read-only.'); render(); return; }
+  D.undo.push(JSON.stringify(P));
+  if (D.undo.length > 200) D.undo.shift();
+  D.redo = [];
+  fn();
+  disarm();
+  render();
+  saveDrafts();
+  if (ui.live) scheduleLive();
+}
+
+/* ---- Browser storage: a draft survives a closed tab ------------------------ */
+let saveTimer = 0;
+function saveDrafts() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      const drafts = {};
+      Object.entries(docs).forEach(([k, d]) => { if (isDirty(d)) drafts[k] = { work: d.work, base: d.base, name: d.name, slot: d.slot }; });
+      localStorage.setItem(STORE_KEY, JSON.stringify({ device: S.device, port: S.port, drafts }));
+    } catch (e) { /* storage unavailable: the page works without it */ }
+  }, 300);
+}
+function loadDrafts() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+    if (!saved) return;
+    S.device = saved.device | 0;
+    S.port = saved.port || '';
+    let n = 0;
+    Object.entries(saved.drafts || {}).forEach(([k, v]) => {
+      if (!docs[k]) { docs[k] = newDoc(v.base, { name: v.name, slot: v.slot }); S.files++; }
+      docs[k].work = v.work;
+      docs[k].base = v.base;
+      n++;
+    });
+    if (n) say('amber', `Recovered edits to ${n} ${n === 1 ? 'patch' : 'patches'} from your last visit.`);
+  } catch (e) { /* unreadable: start clean */ }
+}
+
+/* ---- MIDI link ------------------------------------------------------------ */
+class Link {
+  constructor(pair) {
+    this.input = pair.input; this.output = pair.output; this.name = pair.name;
+    this.listener = null; this.abort = null;
+    this.onMessage = ev => { if (this.listener) this.listener(Array.from(ev.data)); };
+    this.input.addEventListener('midimessage', this.onMessage);
+  }
+  get lost() { return this.input.state === 'disconnected' || this.output.state === 'disconnected'; }
+  send(bytes, at) { if (this.lost) throw new LinkError('The USB connection was lost.'); this.output.send(bytes, at); }
+  async close() {
+    this.input.removeEventListener('midimessage', this.onMessage);
+    await Promise.allSettled([this.input.close(), this.output.close()]);
+  }
+}
+
+function listPairs() {
+  const ins = [...S.access.inputs.values()].filter(p => p.state === 'connected');
+  const outs = [...S.access.outputs.values()].filter(p => p.state === 'connected');
+  return ins.flatMap(input => {
+    const output = outs.find(o => o.name === input.name);
+    return output ? [{ input, output, name: input.name }] : [];
+  });
+}
+function choosePair() {
+  S.pairs = listPairs();
+  if (!S.pairs.length) throw new LinkError('No MIDI ports found. Connect the FM-1 over USB, close other MIDI programs and press Connect.');
+  const named = S.pairs.filter(p => /usb-?midi/i.test(p.name));
+  const picked = S.pairs.find(p => p.name === S.port);
+  if (picked) return picked;
+  if (named.length === 1) return named[0];
+  if (S.pairs.length === 1) return S.pairs[0];
+  S.port = S.port || (named[0] || S.pairs[0]).name;
+  throw new LinkError('Several MIDI ports are available. Choose the FM-1 in the list and press Connect.');
+}
+
+/* Waits for the wanted slots. The timeout runs from the last packet, because
+ * the FM-1 slows its replies while MIDI is busy. */
+function collect(wanted) {
+  return new Promise((resolve, reject) => {
+    const got = new Map(), assembler = new C.Assembler();
+    let timer = 0;
+    const finish = err => { clearTimeout(timer); link.listener = null; link.abort = null; if (err) reject(err); else resolve(got); };
+    const arm = () => { clearTimeout(timer); timer = setTimeout(() => finish(new LinkError(NO_REPLY)), REPLY_IDLE_MS); };
+    link.abort = finish;
+    link.listener = m => {
+      if (!C.isDump(m, S.device)) return; /* other traffic, or a request echoed back */
+      arm();
+      try {
+        const done = assembler.feed(m);
+        if (done && wanted.has(done.slot)) { got.set(done.slot, done.body); if (got.size === wanted.size) finish(); }
+      } catch (e) { finish(e); }
+    };
+    arm();
+  });
+}
+async function exchange(wanted, message) {
+  for (let attempt = 0; ; attempt++) {
+    const wait = collect(wanted);
+    link.send(message);
+    try { return await wait; }
+    catch (e) { if (attempt || e.message !== NO_REPLY) throw e; } /* a request during another reply gets no answer */
+  }
+}
+const requestOne = async slot => (await exchange(new Set([slot]), C.request(S.device, slot))).get(slot);
+const requestAll = () => exchange(new Set(Array.from({ length: C.PATCHES }, (_, i) => i)), C.requestAll(S.device));
+async function requestEach(slots) {
+  const out = new Map();
+  for (const s of slots) out.set(s, await requestOne(s));
+  return out;
+}
+
+async function sendBody(slot, body, verb) {
+  const pk = C.packets(slot, body, S.device);
+  const t0 = performance.now() + 2; /* timestamps keep the gaps even in a background tab */
+  pk.forEach((m, i) => link.send(m, t0 + i * GAP_MS));
+  log(`> ${verb}  ${pk.length} PKT  ${body.length} B\n  ${hex(pk[0].slice(0, 8))} ...`);
+  await sleep(pk.length * GAP_MS + 30);
+}
+
+/* Store a read patch. A draft with edits keeps them: only its base moves. */
+function applyRead(src, body) {
+  const key = src === EDIT ? 'edit' : src;
+  let decoded;
+  try { decoded = C.decode(body); }
+  catch (e) { say('red', `${slotLabel(key)}: ${e.message}`); return false; }
+  if (key === 'edit') device.edit = body; else device.slots[key] = body;
+  const d = docs[key];
+  if (isDirty(d)) d.base = clone(decoded.patch);
+  else { d.work = clone(decoded.patch); d.base = clone(decoded.patch); d.undo = []; d.redo = []; }
+  d.read = true; d.readOnly = decoded.readOnly;
+  return true;
+}
+
+function clearLink(message) {
+  if (link) { if (link.abort) link.abort(new LinkError(message)); link.close(); }
+  link = null; S.answered = false;
+}
+
+/* ---- Device operations: one at a time -------------------------------------- */
+function safeRender() {
+  const a = document.activeElement;
+  if (a && a.matches('#view input:not([type=checkbox])')) renderChrome(); else render();
+}
+async function run(fn) {
+  if (S.busy) return;
+  S.busy = true;
+  disarm();
+  safeRender();
+  try { await fn(); }
+  catch (e) { say('red', e.message); }
+  finally {
+    S.busy = false;
+    safeRender();
+    saveDrafts();
+    if (S.livePending) { S.livePending = false; liveSend(); }
+  }
+}
+
+async function readEverything() {
+  say('info', 'Reading the FM-1…');
+  safeRender();
+  applyRead(EDIT, await requestOne(EDIT));
+  S.answered = true;
+  const all = await requestAll();
+  all.forEach((body, slot) => applyRead(slot, body));
+  log(`> READ EDIT BUFFER, ${all.size} SLOTS`);
+  say('ok', `Connected to ${link.name}, Device ID ${S.device}. Read the edit buffer and ${all.size} slots.`);
+}
+
+function connect() {
+  if (link) {
+    clearLink('Disconnected.');
+    say('info', 'Disconnected.');
+    render();
+    return;
+  }
+  run(async () => {
+    if (!S.access) {
+      say('info', 'Allow MIDI and SysEx access when the browser asks.');
+      safeRender();
+      try { S.access = await navigator.requestMIDIAccess({ sysex: true }); }
+      catch (e) { throw new LinkError('The browser refused MIDI access. Allow MIDI for this site and press Connect again.'); }
+      S.access.addEventListener('statechange', () => {
+        if (link && link.lost) { clearLink('The USB connection was lost.'); say('red', 'The USB connection was lost. Reconnect it and press Connect.'); safeRender(); }
+      });
+    }
+    const pair = choosePair();
+    S.port = pair.name;
+    try { await pair.input.open(); await pair.output.open(); }
+    catch (e) { throw new LinkError(`Cannot open "${pair.name}". Close other MIDI programs and try again.`); }
+    link = new Link(pair);
+    await sleep(OPEN_SETTLE_MS); /* Windows can drop a reply to a message sent at once */
+    log(`> PORT ${pair.name}  DEVICE ID ${pad(S.device, 3)}`);
+    await readEverything();
+  });
+}
+
+/* Tries every Device ID. The wrong ones aren't recognised, so they pass through
+ * the pipeline and show on the monitor, which is why this is only on request. */
+function findDevice() {
+  run(async () => {
+    say('info', 'Trying all 128 Device IDs. They will appear on the FM-1 monitor.');
+    safeRender();
+    const found = new Promise(resolve => {
+      const timer = setTimeout(() => { link.listener = null; resolve(-1); }, 128 * GAP_MS + REPLY_IDLE_MS);
+      link.listener = m => { if (C.isDump(m)) { clearTimeout(timer); link.listener = null; resolve(m[2]); } };
+    });
+    const t0 = performance.now() + 2;
+    for (let id = 0; id < 128; id++) link.send(C.request(id, EDIT), t0 + id * GAP_MS);
+    const id = await found;
+    if (id < 0) throw new LinkError('No Device ID answered. Set ALLOW DUMP REQ to YES on the Sysex Dump page.');
+    S.device = id;
+    log(`> FOUND DEVICE ID ${pad(id, 3)}`);
+    await sleep(128 * GAP_MS + 200); /* let the probes and the reply finish */
+    await readEverything();
+  });
+}
+
+async function tryPatch(readBack) {
+  const body = C.encode(P);
+  await sendBody(EDIT, body, readBack ? 'TRY TO EDIT BUFFER' : 'LIVE TO EDIT BUFFER');
+  if (readBack) {
+    const back = await requestOne(EDIT);
+    if (!C.sameBytes(back, body)) throw new LinkError('The FM-1 did not take this patch: what it holds now is different.');
+    say('ok', 'Trying this patch on the FM-1. Nothing is stored yet.');
+  }
+  applyRead(EDIT, body);
+}
+
+/* Stops if the device's copy changed since it was read. The new copy is then
+ * remembered, so pressing Write again overwrites it. */
+async function staleSlots(slots) {
+  const now = await requestEach(slots), changed = [];
+  now.forEach((body, s) => {
+    if (device.slots[s] && !C.sameBytes(body, device.slots[s])) changed.push(s);
+    device.slots[s] = body;
+  });
+  return changed;
+}
+const slotList = list => list.map(s => pad(s + 1, 2)).join(', ');
+
+async function verifyWrites(written) {
+  await sleep(QUIET_MS + STORE_MS_PER_SLOT * written.size);
+  const back = await requestEach([...written.keys()]);
+  const bad = [...written.keys()].filter(s => !C.sameBytes(back.get(s), written.get(s)));
+  if (bad.length) throw new LinkError(`Read-back failed for slot ${slotList(bad)}: what it holds now is different from what was sent.`);
+  written.forEach((body, s) => { applyRead(s, body); log(`  READ BACK ${pad(s + 1, 2)}: MATCH`); });
+  /* If a written slot was the one in use, the edit buffer changed too. */
+  applyRead(EDIT, await requestOne(EDIT));
+}
+
+async function writeSlot(t) {
+  const body = C.encode(P);
+  say('info', `Writing slot ${pad(t + 1, 2)}…`);
+  safeRender();
+  const changed = await staleSlots([t]);
+  if (changed.length) { say('amber', `Slot ${pad(t + 1, 2)} changed on the FM-1 since it was read. Nothing was written. Press Write again to overwrite it.`); return; }
+  await sendBody(t, body, `WRITE SLOT ${pad(t + 1, 2)}`);
+  await verifyWrites(new Map([[t, body]]));
+  say('ok', `Stored in slot ${pad(t + 1, 2)} and read back.`);
+}
+
+async function writeChanged(slots) {
+  say('info', `Writing ${slots.length} slots…`);
+  safeRender();
+  const changed = await staleSlots(slots);
+  if (changed.length) { say('amber', `Slot ${slotList(changed)} changed on the FM-1 since it was read. Nothing was written. Press Write changed again to overwrite.`); return; }
+  const written = new Map();
+  for (const s of slots) {
+    const body = C.encode(docs[s].work);
+    await sendBody(s, body, `WRITE SLOT ${pad(s + 1, 2)}`);
+    written.set(s, body);
+  }
+  await verifyWrites(written);
+  say('ok', `Stored ${slots.length} slots and read them back.`);
+}
+
+let liveTimer = 0;
+function scheduleLive() { clearTimeout(liveTimer); liveTimer = setTimeout(liveSend, LIVE_MS); }
+function liveSend() {
+  if (!link || !ui.live || D.readOnly || hasErrors(P)) return;
+  if (S.busy) { S.livePending = true; return; }
+  run(() => tryPatch(false));
+}
+
+/* ---- Two-press confirmation, like REC on the FM-1 ---------------------------- */
+let armTimer = 0;
+function disarm() { clearTimeout(armTimer); S.armed = null; }
+function arm(name, warning) {
+  S.armed = name;
+  say('amber', warning);
+  armTimer = setTimeout(() => { S.armed = null; S.notice = null; safeRender(); }, ARM_MS);
+  render();
+}
+
+/* ---- Files ------------------------------------------------------------------ */
+function download(name, bytes) {
+  const url = URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+async function openFile(file) {
+  const parsed = C.parseSyx(new Uint8Array(await file.arrayBuffer()));
+  if (parsed.errors.length && !parsed.patches.length) { say('red', `${file.name}: ${parsed.errors[0]}`); render(); return; }
+  const decoded = [];
+  for (const item of parsed.patches) {
+    try { decoded.push({ ...item, ...C.decode(item.body) }); }
+    catch (e) { say('red', `${file.name}, patch ${item.slot}: ${e.message}`); render(); return; }
+  }
+  if (decoded.length === 1) {
+    const key = 'f' + (++S.files);
+    docs[key] = newDoc(decoded[0].patch, { name: file.name, slot: decoded[0].slot, readOnly: decoded[0].readOnly, read: true });
+    openDoc(key);
+    say('ok', `Opened ${file.name}. Nothing is sent until you press Try or Write.`);
+  } else {
+    decoded.forEach(item => {
+      const d = docs[item.slot === EDIT ? 'edit' : item.slot];
+      d.undo.push(JSON.stringify(d.work));
+      d.redo = [];
+      d.work = clone(item.patch);
+    });
+    say('ok', `Loaded ${decoded.length} patches from ${file.name} as edits. Press Write changed to send them.`);
+  }
+  if (parsed.errors.length) say('amber', `${file.name}: some packets were bad. ${parsed.errors[0]}`);
+  render();
+  saveDrafts();
+}
+function saveFile() {
+  const slot = ui.src === 'edit' ? EDIT : typeof ui.src === 'number' ? ui.src : D.slot;
+  const name = P.name.trim().replace(/[^A-Z0-9-]+/g, '-') || 'PATCH';
+  download(`FM1-${name}.syx`, C.buildSyx([{ slot, body: C.encode(P) }], S.device));
+  log(`> SAVED FM1-${name}.syx`);
+  render();
+}
+function saveBank() {
+  const bad = Array.from({ length: C.PATCHES }, (_, i) => i).filter(i => hasErrors(docs[i].work));
+  if (bad.length) { say('red', `Slot ${slotList(bad)} has errors. Fix them before saving the bank.`); render(); return; }
+  const items = Array.from({ length: C.PATCHES }, (_, i) => ({ slot: i, body: C.encode(docs[i].work) }));
+  download('FM1-bank.syx', C.buildSyx(items, S.device));
+  log('> SAVED FM1-bank.syx');
+  render();
+}
+
+/* ---- Small HTML helpers ---- */
+const pid = path => 'f-' + path.replace(/\./g, '-');
+const opts = (arr, v) => arr.map((t, i) => `<option value="${i}"${i === v ? ' selected' : ''}>${t}</option>`).join('');
+const CHANS = Array.from({ length: 16 }, (_, i) => pad(i + 1, 2));
+const sel = (path, v, arr, label) => `<select class="crt-field" id="${pid(path)}" data-b="${path}" data-k="int" aria-label="${label}">${opts(arr, v)}</select>`;
+function show(kind, v) { if (kind === 'in' && v === 128) return 'IN'; if (kind === 'off' && v < 0) return 'OFF'; if (kind === 'prog') return v + 1; return v; }
+const num = (path, v, kind, label) => `<input class="crt-field" id="${pid(path)}" data-b="${path}" data-k="${kind}" value="${show(kind, v)}" inputmode="${kind === 'n' || kind === 'prog' ? 'numeric' : 'text'}" autocomplete="off" aria-label="${label}">`;
+const lab = (t, inner) => `<label><span class="crt-label">${t}</span>${inner}</label>`;
+function parse(kind, raw) {
+  const s = raw.trim().toUpperCase();
+  if (kind === 'in' && s === 'IN') return 128;
+  if (kind === 'off' && (s === '' || s === 'OFF')) return -1;
+  const n = parseInt(s, 10);
+  if (Number.isNaN(n)) return null;
+  const c = (lo, hi) => Math.min(hi, Math.max(lo, n));
+  switch (kind) {
+    case 'prog': return Math.min(127, Math.max(0, n - 1));
+    case 'cc': return c(0, 119);
+    case 'vel': return c(1, 127);
+    case 'oct': return c(-3, 3);
+    case 'int': return n;
+    default: return c(0, 127);
+  }
+}
+function setPath(path, v) {
+  const k = path.split('.'), last = k.pop();
+  k.reduce((o, x) => o[x], P)[last] = v;
+  const m = path.match(/^trig\.(\d+)\.d([12])\.([01])$/);
+  if (m) {
+    const r = P.trig[+m[1]]['d' + m[2]];
+    if (m[3] === '0' && r[0] > r[1]) r[1] = r[0];
+    if (m[3] === '1' && r[1] < r[0]) r[0] = r[1];
+  }
+  if (path === 'live.vmin' && P.live.vmax < v) P.live.vmax = v;
+  if (path === 'live.vmax' && P.live.vmin > v) P.live.vmin = v;
+}
+const portTabs = () => `<div class="row" role="group" aria-label="Input port">${PORTS.map((n, i) => `<button class="crt-btn" id="pt-${i}" data-a="port" data-i="${i}" aria-pressed="${ui.port === i}">${n}</button>`).join('')}</div>`;
+const stateText = on => `<span>${on ? 'OK' : 'Block'}</span>`;
+const chHeads = () => CHANS.map(c => `<div class="h">${+c}</div>`).join('');
+
+/* ---- Sections ---- */
+function viewChf() {
+  let h = `<div class="gap"><p class="hint">Click a cell to switch it between OK and Block. A blocked channel stops here, before everything else in the signal path.</p><div class="scroll"><div class="mx text wide"><div></div>${chHeads()}<div></div>`;
+  PORTS.forEach((n, p) => {
+    h += `<div class="h l">${n}</div>`;
+    for (let c = 0; c < 16; c++) { const on = P.ch[p] >> c & 1; h += `<button class="c" id="chf-${p}-${c}" data-a="chf" data-p="${p}" data-c="${c}" aria-pressed="${!!on}" aria-label="${n} channel ${c + 1}: ${on ? 'passes' : 'blocked'}">${stateText(on)}</button>`; }
+    h += `<div class="row" style="gap:2px;flex-wrap:nowrap;justify-content:flex-end"><button class="crt-btn" style="height:24px;padding:0 5px;font-size:10px" id="chf-all-${p}" data-a="chfall" data-p="${p}" data-v="65535">All</button><button class="crt-btn" style="height:24px;padding:0 5px;font-size:10px" id="chf-none-${p}" data-a="chfall" data-p="${p}" data-v="0">None</button></div>`;
+  });
+  return h + '</div></div></div>';
+}
+function viewMsgf() {
+  const p = ui.port;
+  let h = `<div class="gap"><div class="row">${portTabs()}</div><div class="crt-legend-box"><span class="crt-legend">System messages</span><div class="scroll"><div class="sys">`;
+  SYS.forEach((n, i) => { const on = P.sys[p] >> i & 1; h += `<button class="c" id="sys-${i}" data-a="sys" data-i="${i}" aria-pressed="${!!on}" aria-label="${n}: ${on ? 'passes' : 'blocked'}"><b>${n}</b>${stateText(on)}</button>`; });
+  h += `</div></div></div><div class="crt-legend-box"><span class="crt-legend">Channel messages</span><div class="scroll"><div class="mx text"><div></div>`;
+  for (let c = 0; c < 16; c++) h += `<button class="h" id="vc-${c}" data-a="voicecol" data-c="${c}" aria-label="Toggle channel ${c + 1}">${c + 1}</button>`;
+  VOICE.forEach((n, t) => {
+    h += `<button class="h l" id="vr-${t}" data-a="voicerow" data-t="${t}" aria-label="Toggle ${n} on all channels">${n}</button>`;
+    for (let c = 0; c < 16; c++) { const on = P.voice[p][c] >> t & 1; h += `<button class="c" id="v-${t}-${c}" data-a="voice" data-t="${t}" data-c="${c}" aria-pressed="${!!on}" aria-label="${n} channel ${c + 1}: ${on ? 'passes' : 'blocked'}">${stateText(on)}</button>`; }
+  });
+  return h + `</div></div></div><p class="hint">Click a cell to switch it between OK and Block. Click a row or column heading to flip the whole line.</p></div>`;
+}
+function viewMr() {
+  const bad = dupRows();
+  const rows = P.msgRules.map((r, i) => [r, i]).filter(([r]) => ui.mrPort < 0 || r.port === ui.mrPort).sort((a, b) => msgKey(a[0]) - msgKey(b[0]));
+  let h = `<div class="gap"><div class="row"><span class="crt-label">Show</span><select class="crt-field" style="width:120px" id="mr-filter" data-ui="mrPort" aria-label="Filter by port"><option value="-1"${ui.mrPort < 0 ? ' selected' : ''}>All ports</option>${PORTS.map((n, i) => `<option value="${i}"${ui.mrPort === i ? ' selected' : ''}>${n}</option>`).join('')}</select><span class="spacer"></span><button class="crt-btn" id="mr-add" data-a="mradd">+ New rule</button></div><div class="scroll"><table class="crt-table"><tr><th>Port</th><th>Ch</th><th>Type</th><th>In</th><th></th><th>Out</th><th></th><th>Out ch</th><th></th></tr>`;
+  if (!rows.length) h += `<tr><td colspan="9" style="color:var(--crt-ink-3)">No message rules. Every note, CC and program passes unchanged.</td></tr>`;
+  rows.forEach(([r, i]) => {
+    const n = r.type === 0;
+    h += `<tr${bad.has(i) ? ' class="bad"' : ''}><td>${sel(`msgRules.${i}.port`, r.port, PORTS, 'Port')}</td><td>${sel(`msgRules.${i}.ch`, r.ch, CHANS, 'Channel')}</td><td>${sel(`msgRules.${i}.type`, r.type, REMAP, 'Type')}</td><td>${num(`msgRules.${i}.in`, r.in, 'n', 'Input value')}</td><td class="note">${n ? note(r.in) : ''}</td><td>${num(`msgRules.${i}.out`, r.out, 'n', 'Output value')}</td><td class="note">${n ? note(r.out) : ''}</td><td>${sel(`msgRules.${i}.outCh`, r.outCh, CHANS, 'Output channel')}</td><td><button class="crt-btn crt-btn-danger mini" id="mr-del-${i}" data-a="mrdel" data-i="${i}" aria-label="Delete rule">×</button></td></tr>`;
+  });
+  return h + `</table></div><p class="hint">A NOTE rule covers Note On, Note Off and Poly Aftertouch, so a remapped note is always released. Saved order is fixed by the format: port, channel, type, input.</p></div>`;
+}
+function viewCr() {
+  const p = ui.port;
+  const map = {}; P.chRules.forEach(r => { if (r.port === p) map[r.in] = r.out; });
+  let h = `<div class="gap"><div class="row">${portTabs()}<span class="spacer"></span><span class="crt-label">Input down · output across</span></div><div class="scroll"><div class="mx"><div></div>${chHeads()}`;
+  for (let i = 0; i < 16; i++) {
+    h += `<div class="h">${i + 1}</div>`;
+    for (let o = 0; o < 16; o++) h += `<button class="c route${i === o ? ' diag' : ''}" id="cr-${i}-${o}" data-a="route" data-i="${i}" data-o="${o}" aria-pressed="${map[i] === o}" aria-label="${PORTS[p]} channel ${i + 1} to channel ${o + 1}"></button>`;
+  }
+  return h + `</div></div><p class="hint">Click once to send an input channel to an output channel, and again to remove it. Inputs with no mark stay on their own channel. Applied after message rules.</p></div>`;
+}
+function viewTrig() {
+  const list = P.trig;
+  if (ui.trig >= list.length) ui.trig = Math.max(0, list.length - 1);
+  const i = ui.trig, t = list[i];
+  let h = `<div class="two"><div class="gap"><div class="row"><span class="crt-label">Firing order</span><span class="spacer"></span><button class="crt-btn mini" id="t-up" data-a="tmove" data-d="-1" aria-label="Move up"${!t || i === 0 ? ' disabled' : ''}>▲</button><button class="crt-btn mini" id="t-dn" data-a="tmove" data-d="1" aria-label="Move down"${!t || i === list.length - 1 ? ' disabled' : ''}>▼</button><button class="crt-btn" id="t-add" data-a="tadd">+ New</button></div><div class="scroll"><table class="crt-table"><tr><th>#</th><th>P</th><th>Ch</th><th>Type</th><th>D1</th><th>Msgs</th></tr>`;
+  if (!list.length) h += `<tr><td colspan="6" style="color:var(--crt-ink-3)">No triggers in this patch.</td></tr>`;
+  list.forEach((x, n) => { h += `<tr data-a="tsel" data-i="${n}" style="cursor:pointer" aria-selected="${n === i}"><td>${pad(n + 1, 2)}</td><td>${PORTS[x.port][0]}</td><td>${pad(x.ch + 1, 2)}</td><td>${TRIG[x.type]}</td><td>${pad(x.d1[0], 3)}-${pad(x.d1[1], 3)}</td><td>${pad(x.msgs.length, 2)}</td></tr>`; });
+  h += `</table></div></div>`;
+  if (!t) return h + `<p class="hint">A trigger watches for a message and sends a list of others. Add one to start.</p></div>`;
+  const pc = t.type === 3, isNote = t.type < 2, P_ = `trig.${i}`;
+  h += `<div class="gap"><div class="crt-legend-box"><span class="crt-legend">Trigger ${pad(i + 1, 2)}: when this arrives</span><div class="gap"><div class="fields">${lab('Port', sel(P_ + '.port', t.port, PORTS, 'Port'))}${lab('Channel', sel(P_ + '.ch', t.ch, CHANS, 'Channel'))}${lab('Type', sel(P_ + '.type', t.type, TRIG, 'Type'))}${lab('D1 from' + (isNote ? ' ' + note(t.d1[0]) : ''), num(P_ + '.d1.0', t.d1[0], 'n', 'D1 from'))}${lab('D1 to' + (isNote ? ' ' + note(t.d1[1]) : ''), num(P_ + '.d1.1', t.d1[1], 'n', 'D1 to'))}${pc ? lab('D2 from', '<input class="crt-field" disabled value="---" aria-label="D2 not used for PC">') + lab('D2 to', '<input class="crt-field" disabled value="---" aria-label="D2 not used for PC">') : lab('D2 from', num(P_ + '.d2.0', t.d2[0], 'n', 'D2 from')) + lab('D2 to', num(P_ + '.d2.1', t.d2[1], 'n', 'D2 to'))}</div><div class="row" style="gap:18px"><label class="crt-switch"><input type="checkbox" id="t-pass" data-a2="pass"${t.pass ? ' checked' : ''}><span class="crt-switch-track"></span> Pass input</label><label class="crt-switch"><input type="checkbox" id="t-enter" data-a2="enter"${t.enter ? ' checked' : ''}><span class="crt-switch-track"></span> Fire on enter only</label><span class="spacer"></span><button class="crt-btn crt-btn-danger" id="t-del" data-a="tdel">Delete</button></div></div></div>`;
+  h += `<div class="crt-legend-box"><span class="crt-legend">Then send, top to bottom · ${pad(t.msgs.length, 2)}/32</span><div class="gap"><div class="scroll"><table class="crt-table"><tr><th>#</th><th>Type</th><th>Ch</th><th>D1</th><th>D2</th><th></th></tr>`;
+  t.msgs.forEach((m, n) => {
+    const M = `${P_}.msgs.${n}`;
+    h += `<tr><td>${pad(n + 1, 2)}</td><td>${sel(M + '.type', m.type, TRIG, 'Type')}</td><td>${sel(M + '.ch', m.ch, CHANS, 'Channel')}</td><td>${num(M + '.d1', m.d1, 'in', 'Data 1')}</td><td>${m.type === 3 ? '<span style="color:var(--crt-ink-3)">---</span>' : num(M + '.d2', m.d2, 'in', 'Data 2')}</td><td><div class="row" style="gap:3px;flex-wrap:nowrap"><button class="crt-btn mini" id="m-dup-${n}" data-a="mdup" data-i="${n}" aria-label="Duplicate message">+</button><button class="crt-btn crt-btn-danger mini" id="m-del-${n}" data-a="mdel" data-i="${n}" aria-label="Delete message">×</button></div></td></tr>`;
+  });
+  return h + `</table></div><div class="row"><button class="crt-btn" id="m-add" data-a="madd">+ Add message</button><span class="hint">Type IN to copy the triggering value.</span></div></div></div></div></div>`;
+}
+function viewCtl() {
+  const l = P.live;
+  let h = `<div class="gap"><div class="crt-legend-box"><span class="crt-legend">Knobs 1-4</span><div class="knobs">`;
+  P.knobs.forEach((k, i) => { h += `<div class="fields" style="grid-template-columns:1fr 1fr"><span class="crt-label" style="grid-column:1/-1;color:var(--crt-acc)">Knob ${i + 1}</span>${lab('Channel', sel(`knobs.${i}.ch`, k.ch, CHANS, `Knob ${i + 1} channel`))}${lab('CC 0-119', num(`knobs.${i}.cc`, k.cc, 'cc', `Knob ${i + 1} CC`))}</div>`; });
+  h += `</div></div><div class="crt-legend-box"><span class="crt-legend">Live Keys</span><div class="fields">${lab('Channel', sel('live.ch', l.ch, CHANS, 'Channel'))}${lab('Velocity min', num('live.vmin', l.vmin, 'vel', 'Velocity min'))}${lab('Velocity max', num('live.vmax', l.vmax, 'vel', 'Velocity max'))}${lab('Octave', num('live.oct', l.oct, 'oct', 'Octave'))}${lab('Program 1-128', num('live.prog', l.prog, 'prog', 'Program'))}${lab('Bank MSB', num('live.msb', l.msb, 'off', 'Bank MSB'))}${lab('Bank LSB', num('live.lsb', l.lsb, 'off', 'Bank LSB'))}</div></div></div>`;
+  return h;
+}
+const VIEWS = {
+  chf: ['Channel Filter', viewChf], msgf: ['Message Filter', viewMsgf], trig: ['Event Triggers', viewTrig],
+  mr: ['Message Remap', viewMr], cr: ['Channel Remap', viewCr], ctl: ['Knobs and Live Keys', viewCtl],
+};
+
+/* ---- Render ----------------------------------------------------------------- */
+function renderConn() {
+  const canPick = S.pairs.length > 1;
+  const state = !link ? 'off' : S.answered ? '' : 'amber';
+  const label = !link ? 'Not connected' : S.answered ? `${esc(link.name)} · ID ${pad(S.device, 3)}` : `${esc(link.name)} · no reply`;
+  $('conn').innerHTML = `${canPick ? `<select class="crt-field" id="portsel" data-s2="port" aria-label="MIDI port">${S.pairs.map(p => `<option${p.name === S.port ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select>` : ''}<label class="row" style="gap:6px"><span class="crt-label">Device ID</span><input class="crt-field" id="devid" data-s2="device" inputmode="numeric" autocomplete="off" value="${S.device}"${link ? ' disabled' : ''}></label><button class="crt-btn" id="c-find" data-a="find"${link && !S.busy ? '' : ' disabled'}>Find ID</button><button class="crt-btn crt-btn-primary" id="c-conn" data-a="connect"${S.busy || !navigator.requestMIDIAccess ? ' disabled' : ''}>${link ? 'Disconnect' : 'Connect'}</button><span class="row" style="gap:6px"><span class="crt-led ${state}${S.busy ? ' blink' : ''}"></span><span class="crt-label">${label}</span></span>`;
+}
+function renderBank() {
+  const canSend = link && S.answered && !S.busy;
+  const changed = changedSlots();
+  $('bankbar').innerHTML = `<button class="crt-btn" id="b-open" data-a="openfile">Open</button><button class="crt-btn" id="b-save" data-a="savefile">Save</button><button class="crt-btn" id="b-savebank" data-a="savebank">Save bank</button><button class="crt-btn" id="b-readall" data-a="readall"${canSend ? '' : ' disabled'}>Read all</button><button class="crt-btn crt-btn-danger" id="b-writeall" data-a="writeall"${canSend && changed.length ? '' : ' disabled'} aria-pressed="${S.armed === 'bank'}">${S.armed === 'bank' ? 'Write again' : `Write changed${changed.length ? ' ' + changed.length : ''}`}</button>`;
+  const row = (src, num, name, named) => {
+    const edits = isDirty(docs[src]);
+    return `<button class="slot" id="slot-${src}" data-a="open" data-s="${src}" aria-current="${ui.src === src}"><b>${num}</b><span class="${named ? 'named' : ''}">${esc(name)}</span><span class="crt-led ${edits ? 'amber' : 'off'}" title="${edits ? 'Edited' : 'Same as device'}"></span></button>`;
+  };
+  const nameOf = s => docs[s].work.name.trim() || '(no name)';
+  let h = row('edit', 'ED', nameOf('edit'), true);
+  for (let i = 0; i < C.PATCHES; i++) { const d = nameOf(i); h += row(i, pad(i + 1, 2), d, !/^PATCH \d\d$/.test(d)); }
+  Object.keys(docs).filter(k => k[0] === 'f').forEach(k => { h += row(k, 'FI', nameOf(k), true); });
+  $('bank').innerHTML = h;
+}
+function changedSlots() {
+  return Array.from({ length: C.PATCHES }, (_, i) => i).filter(i => isDirty(docs[i]));
+}
+function renderActions() {
+  const errs = hasErrors(P) || D.readOnly;
+  const can = link && S.answered && !S.busy;
+  const canRead = can && (ui.src === 'edit' || typeof ui.src === 'number');
+  const where = typeof ui.src === 'string' && ui.src[0] === 'f' ? 'FILE ' + D.name : slotLabel(ui.src);
+  const a = $('pname');
+  if (document.activeElement !== a) a.value = P.name.trimEnd();
+  a.disabled = D.readOnly;
+  $('actions').innerHTML = `<span class="crt-badge">${esc(where)}${isDirty(D) ? ' *' : ''}${D.readOnly ? ' · READ-ONLY' : ''}</span><button class="crt-btn" id="a-read" data-a="read"${canRead ? '' : ' disabled'} aria-pressed="${S.armed === 'read'}">${S.armed === 'read' ? 'Read again' : 'Read'}</button><button class="crt-btn" id="a-undo" data-a="undo"${D.undo.length ? '' : ' disabled'}>Undo</button><button class="crt-btn" id="a-redo" data-a="redo"${D.redo.length ? '' : ' disabled'}>Redo</button><span class="spacer"></span><label class="crt-switch"><input type="checkbox" id="a-live" data-a2="live"${ui.live ? ' checked' : ''}${link && S.answered ? '' : ' disabled'}><span class="crt-switch-track"></span> Live</label><button class="crt-btn crt-btn-primary" id="a-try" data-a="try"${can && !errs ? '' : ' disabled'}>Try</button><select class="crt-field target" id="a-target" data-s2="target" aria-label="Slot to write">${Array.from({ length: C.PATCHES }, (_, i) => `<option value="${i}"${i === S.target ? ' selected' : ''}>Slot ${pad(i + 1, 2)}</option>`).join('')}</select><button class="crt-btn crt-btn-danger" id="a-write" data-a="write"${can && !errs ? '' : ' disabled'} aria-pressed="${S.armed === 'write'}">${S.armed === 'write' ? '<span class="crt-led red blink"></span> Write again' : 'Write to slot'}</button>`;
+}
+function renderNotice() {
+  const n = S.notice;
+  const led = !n ? 'off' : n.sev === 'ok' ? '' : n.sev === 'info' ? (S.busy ? 'blink' : '') : n.sev;
+  const fallback = navigator.requestMIDIAccess ? 'Press Connect to read your FM-1, or open a .syx file.' : 'This browser has no Web MIDI, so it can\'t reach the FM-1. Use desktop Chrome or Edge to connect. You can still open and edit .syx files.';
+  $('notice').innerHTML = `<span class="crt-led ${led}"></span><span>${esc(n ? n.text : fallback)}</span>`;
+}
+function summary(k) {
+  const bits = v => v.toString(2).replace(/0/g, '').length;
+  const blockedCh = PORTS.reduce((n, _, p) => n + (16 - bits(P.ch[p])), 0);
+  const blockedMsg = P.voice.reduce((n, port) => n + port.reduce((m, v) => m + (7 - bits(v)), 0), 0) + P.sys.reduce((n, s) => n + (10 - bits(s)), 0);
+  return { chf: blockedCh ? blockedCh + ' blocked' : 'all pass', msgf: blockedMsg ? blockedMsg + ' blocked' : 'all pass', trig: P.trig.length + ' / ' + P.trig.reduce((n, t) => n + t.msgs.length, 0) + ' msgs', mr: P.msgRules.length + ' rules', cr: P.chRules.length + ' rules', ctl: '4 knobs' }[k];
+}
+function renderPipe() {
+  const step = (k, t, cls = '') => `<button class="step ${cls}" id="p-${k}" data-a="view" data-v="${k}" aria-pressed="${ui.view === k}"><span class="t">${t}<span class="crt-led ${edited(D, SECTIONS[k]) ? 'amber' : 'off'}"></span></span><span class="s">${summary(k)}</span></button>`;
+  const w = '<span class="wire"></span>';
+  $('pipe').innerHTML = `<div class="node"><strong>IN</strong>TRS USB</div>${w}${step('chf', 'Ch filter')}${w}${step('msgf', 'Msg filter')}${w}${step('trig', 'Triggers')}${w}${step('mr', 'Msg remap')}${w}${step('cr', 'Ch remap')}${w}<div class="node"><strong>OUT</strong>USB</div>${step('ctl', 'Knobs + keys', 'apart')}`;
+}
+function renderSide() {
+  const body = C.encode(P), pk = C.packets(0, body, 0).length, msgs = P.trig.reduce((n, t) => n + t.msgs.length, 0);
+  const row = (t, v, max) => {
+    const lit = v ? Math.max(1, Math.ceil(v / max * 20)) : 0;
+    return `<div><div class="r"><span>${t}</span><span>${v} / ${max}</span></div><div class="crt-meter" role="img" aria-label="${t}: ${v} of ${max}">${Array.from({ length: 20 }, (_, i) => `<i class="${i < lit ? 'on' : ''}"></i>`).join('')}</div></div>`;
+  };
+  $('cap').innerHTML = row('Patch bytes', body.length, LIM.body) + row('SysEx packets', pk, LIM.packets) + row('Message rules', P.msgRules.length, LIM.msgRules) + row('Channel rules', P.chRules.length, LIM.chRules) + row('Triggers', P.trig.length, LIM.trig) + row('Trigger messages', msgs, LIM.allMsgs);
+  const list = problems();
+  $('issues').innerHTML = list.length ? list.map(i => `<li><span class="crt-led ${i.sev}"></span><span>${esc(i.text)}</span></li>`).join('') : '<li><span class="crt-led"></span><span>None. The FM-1 will accept this patch.</span></li>';
+  const l = $('log');
+  l.textContent = logLines.join('\n') || '> Nothing sent yet.';
+  l.scrollTop = l.scrollHeight;
+}
+function renderChrome() {
+  P = D.work;
+  renderConn(); renderBank(); renderActions(); renderNotice(); renderPipe(); renderSide();
+}
+function render() {
+  const a = document.activeElement, focusId = a && a.id;
+  renderChrome();
+  $('vt').textContent = VIEWS[ui.view][0];
+  $('view').innerHTML = VIEWS[ui.view][1]();
+  if (focusId && $(focusId) && $(focusId) !== a) $(focusId).focus({ preventScroll: true });
+}
+
+/* ---- Events ----------------------------------------------------------------- */
+function openDoc(key) {
+  ui.src = key;
+  D = docs[key];
+  disarm();
+  if (typeof key === 'number') S.target = key;
+  render();
+}
+const toggleBit = (arr, i, bit) => { arr[i] ^= 1 << bit; };
+const ACT = {
+  connect, find: findDevice,
+  open: e => { const s = e.dataset.s; openDoc(/^\d+$/.test(s) ? +s : s); },
+  view: e => { ui.view = e.dataset.v; render(); },
+  port: e => { ui.port = +e.dataset.i; render(); },
+  openfile: () => $('file').click(),
+  savefile: saveFile,
+  savebank: saveBank,
+  readall: () => run(readEverything),
+  read: () => {
+    if (isDirty(D) && S.armed !== 'read') { arm('read', 'Read again to discard the edits to this patch.'); return; }
+    disarm();
+    const src = ui.src, doc = D;
+    run(async () => {
+      const body = await requestOne(src === 'edit' ? EDIT : src);
+      doc.undo.push(JSON.stringify(doc.work));
+      doc.work = clone(doc.base);
+      const undo = doc.undo;
+      applyRead(src === 'edit' ? EDIT : src, body);
+      doc.undo = undo;
+      say('ok', `Read ${slotLabel(src).toLowerCase()} from the FM-1.`);
+    });
+  },
+  undo: () => { D.redo.push(JSON.stringify(P)); D.work = JSON.parse(D.undo.pop()); render(); saveDrafts(); },
+  redo: () => { D.undo.push(JSON.stringify(P)); D.work = JSON.parse(D.redo.pop()); render(); saveDrafts(); },
+  try: () => run(() => tryPatch(true)),
+  write: () => {
+    if (S.armed !== 'write') { arm('write', `Press Write again to store this in slot ${pad(S.target + 1, 2)}. If that slot is the patch in use on the FM-1, unsaved panel edits are lost.`); return; }
+    disarm();
+    const t = S.target;
+    run(() => writeSlot(t));
+  },
+  writeall: () => {
+    const slots = changedSlots();
+    const bad = slots.filter(i => hasErrors(docs[i].work) || docs[i].readOnly);
+    if (bad.length) { say('red', `Slot ${slotList(bad)} can't be written. Fix its errors first.`); render(); return; }
+    if (S.armed !== 'bank') { arm('bank', `Press Write changed again to store slots ${slotList(slots)}. If one is the patch in use on the FM-1, unsaved panel edits are lost.`); return; }
+    disarm();
+    run(() => writeChanged(slots));
+  },
+  chf: e => mutate(() => toggleBit(P.ch, +e.dataset.p, +e.dataset.c)),
+  chfall: e => mutate(() => { P.ch[+e.dataset.p] = +e.dataset.v; }),
+  sys: e => mutate(() => toggleBit(P.sys, ui.port, +e.dataset.i)),
+  voice: e => mutate(() => toggleBit(P.voice[ui.port], +e.dataset.c, +e.dataset.t)),
+  voicerow: e => mutate(() => { const t = +e.dataset.t, v = P.voice[ui.port], on = v.every(x => x >> t & 1); v.forEach((x, c) => { v[c] = on ? x & ~(1 << t) : x | 1 << t; }); }),
+  voicecol: e => mutate(() => { const c = +e.dataset.c, v = P.voice[ui.port]; v[c] = v[c] === 0x7f ? 0 : 0x7f; }),
+  mradd: () => mutate(() => {
+    const port = ui.mrPort < 0 ? 1 : ui.mrPort;
+    const taken = new Set(P.msgRules.filter(r => r.port === port && r.ch === 0 && r.type === 0).map(r => r.in));
+    let v = 60;
+    while (taken.has(v) && v < 127) v++;
+    P.msgRules.push({ port, ch: 0, type: 0, in: v, out: v, outCh: 0 });
+  }),
+  mrdel: e => mutate(() => P.msgRules.splice(+e.dataset.i, 1)),
+  route: e => mutate(() => { const i = +e.dataset.i, o = +e.dataset.o, at = P.chRules.findIndex(r => r.port === ui.port && r.in === i); if (at >= 0 && P.chRules[at].out === o) P.chRules.splice(at, 1); else if (at >= 0) P.chRules[at].out = o; else P.chRules.push({ port: ui.port, in: i, out: o }); }),
+  tsel: e => { ui.trig = +e.dataset.i; render(); },
+  tadd: () => mutate(() => { P.trig.push({ port: 1, ch: 0, type: 3, d1: [0, 127], d2: [0, 127], pass: true, enter: true, msgs: [] }); ui.trig = P.trig.length - 1; }),
+  tdel: () => mutate(() => P.trig.splice(ui.trig, 1)),
+  tmove: e => mutate(() => { const a = ui.trig, b = a + +e.dataset.d, l = P.trig; [l[a], l[b]] = [l[b], l[a]]; ui.trig = b; }),
+  madd: () => mutate(() => P.trig[ui.trig].msgs.push({ type: 2, ch: 0, d1: 0, d2: 0 })),
+  mdup: e => mutate(() => { const m = P.trig[ui.trig].msgs, i = +e.dataset.i; m.splice(i + 1, 0, clone(m[i])); }),
+  mdel: e => mutate(() => P.trig[ui.trig].msgs.splice(+e.dataset.i, 1)),
+};
+document.addEventListener('click', ev => { const e = ev.target.closest('[data-a]'); if (e && !e.disabled) ACT[e.dataset.a](e); });
+document.addEventListener('change', ev => {
+  const e = ev.target;
+  if (e.id === 'file') { if (e.files[0]) openFile(e.files[0]); e.value = ''; return; }
+  if (e.id === 'pname') { const n = C.cleanName(e.value); mutate(() => { P.name = n; }); return; }
+  if (e.dataset.s2 === 'device') { const v = parseInt(e.value, 10); S.device = Number.isNaN(v) ? S.device : Math.min(127, Math.max(0, v)); saveDrafts(); render(); return; }
+  if (e.dataset.s2 === 'port') { S.port = e.value; saveDrafts(); return; }
+  if (e.dataset.s2 === 'target') { S.target = +e.value; disarm(); render(); return; }
+  if (e.dataset.ui) { ui[e.dataset.ui] = +e.value; render(); return; }
+  if (e.dataset.a2 === 'live') { ui.live = e.checked; log(ui.live ? '> LIVE ON' : '> LIVE OFF'); render(); return; }
+  if (e.dataset.a2) { const k = e.dataset.a2, c = e.checked; mutate(() => { P.trig[ui.trig][k] = c; }); return; }
+  if (e.dataset.b) { const v = parse(e.dataset.k, e.value); if (v === null) { render(); return; } mutate(() => setPath(e.dataset.b, v)); }
+});
+document.addEventListener('input', ev => {
+  if (ev.target.id !== 'pname') return;
+  const s = ev.target.selectionStart;
+  ev.target.value = ev.target.value.toUpperCase().replace(/[^A-Z0-9 -]/g, '');
+  ev.target.setSelectionRange(s, s);
+});
+loadDrafts();
+render();
+</script>
+</body>
+</html>

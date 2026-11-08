@@ -1,0 +1,384 @@
+/* crt.css: a dark, bevelled "retro hardware / CRT" look in plain CSS.
+ *
+ * No framework and no build step. Link this file, put class="crt" on <body>
+ * (or any container), and use the component classes below.
+ * Retheme everything by changing --crt-h (the hue, 0-360).
+ * See README.md for the full list.
+ */
+
+/* ---------- 1. Palette: every colour comes from one hue ---------- */
+:root {
+  color-scheme: dark;
+
+  --crt-h: 190;          /* hue: 190 teal, 140 green, 35 amber, 280 violet, 330 pink */
+  --crt-s-bg: 30%;       /* saturation of backgrounds */
+  --crt-s-bevel: 23%;    /* saturation of bevels and dim accents */
+  --crt-s-acc: 67%;      /* saturation of the accent */
+  --crt-s-ink: 25%;      /* saturation of text */
+
+  /* Backgrounds, darkest to lightest */
+  --crt-shadow:   hsl(var(--crt-h) var(--crt-s-bg) 3%);
+  --crt-bg-0:     hsl(var(--crt-h) var(--crt-s-bg) 4%);   /* page */
+  --crt-bg-well:  hsl(var(--crt-h) var(--crt-s-bg) 5%);   /* sunken areas */
+  --crt-bg-1:     hsl(var(--crt-h) var(--crt-s-bg) 6%);
+  --crt-bg-2:     hsl(var(--crt-h) var(--crt-s-bg) 8%);
+  --crt-bg-panel: hsl(var(--crt-h) var(--crt-s-bg) 9%);   /* cards and panels */
+  --crt-bg-head:  hsl(var(--crt-h) var(--crt-s-bg) 12%);  /* panel headers */
+  --crt-btn-face: hsl(var(--crt-h) var(--crt-s-bg) 14%);  /* plain buttons */
+  --crt-hatch-a:  hsl(var(--crt-h) var(--crt-s-bg) 15%);
+  --crt-hatch-b:  hsl(var(--crt-h) var(--crt-s-bg) 11%);
+
+  /* Lines and bevels */
+  --crt-line:     hsl(var(--crt-h) var(--crt-s-bg) 23%);
+  --crt-line-lt:  hsl(var(--crt-h) var(--crt-s-bg) 27%);
+  --crt-line-lt2: hsl(var(--crt-h) var(--crt-s-bevel) 33%);
+  --crt-bevel:    hsl(var(--crt-h) var(--crt-s-bevel) 40%); /* lit edge */
+  --crt-bevel-lt: hsl(var(--crt-h) var(--crt-s-acc) 59%);   /* brighter lit edge */
+
+  /* Accent */
+  --crt-btn:      hsl(var(--crt-h) var(--crt-s-acc) 30%);   /* primary buttons */
+  --crt-btn-hover:hsl(var(--crt-h) var(--crt-s-acc) 24%);
+  --crt-sel-bg:   hsl(var(--crt-h) var(--crt-s-acc) 20%);   /* selection */
+  --crt-acc-dim:  hsl(var(--crt-h) var(--crt-s-bevel) 49%);
+  --crt-acc:      hsl(var(--crt-h) var(--crt-s-acc) 63%);
+  --crt-acc-br:   hsl(var(--crt-h) var(--crt-s-acc) 72%);
+  --crt-acc-lt:   hsl(var(--crt-h) var(--crt-s-acc) 79%);
+
+  /* Text, brightest to dimmest */
+  --crt-ink:   hsl(var(--crt-h) var(--crt-s-ink) 92%);
+  --crt-ink-2: hsl(var(--crt-h) var(--crt-s-ink) 82%);
+  --crt-ink-3: hsl(var(--crt-h) var(--crt-s-ink) 72%);
+
+  /* Fixed colours */
+  --crt-led: #f0c466;            /* amber indicator */
+  --crt-danger: #ff5a6a;
+  --crt-scanline-opacity: .28;
+
+  /* Hard, offset shadows (no blur) */
+  --crt-shadow-raised: 3px 3px 0 #00000073;
+  --crt-shadow-menu:   6px 6px 0 #0009;
+  --crt-shadow-modal:  12px 12px 0 #000000b3;
+
+  --crt-font: "Doto", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --crt-font-body: ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
+/* ---------- 2. Base ---------- */
+.crt {
+  background: var(--crt-bg-0);
+  color: var(--crt-ink-2);
+  font-family: var(--crt-font-body);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.crt *, .crt *::before, .crt *::after { box-sizing: border-box; border-radius: 0; }
+.crt ::selection { background: var(--crt-sel-bg); color: var(--crt-ink); }
+.crt :focus-visible { outline: 1px dashed var(--crt-acc); outline-offset: 2px; }
+
+.crt-display {               /* dot-matrix headings (needs the Doto font) */
+  font-family: var(--crt-font);
+  font-weight: 800;
+  letter-spacing: .04em;
+  color: var(--crt-acc-br);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--crt-acc) 45%, transparent);
+}
+.crt-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--crt-ink-3); }
+
+/* ---------- 3. Bevels: the core trick ----------
+ * Raised = light top/left, dark bottom/right. Inset = the reverse.
+ */
+.crt-raised {
+  border: 2px solid;
+  border-color: var(--crt-bevel) var(--crt-shadow) var(--crt-shadow) var(--crt-bevel);
+}
+.crt-raised-thin {
+  border: 1px solid;
+  border-color: var(--crt-bevel) var(--crt-shadow) var(--crt-shadow) var(--crt-bevel);
+}
+.crt-raised-lit {
+  border: 1px solid;
+  border-color: var(--crt-bevel-lt) var(--crt-shadow) var(--crt-shadow) var(--crt-bevel-lt);
+}
+.crt-inset {
+  border: 1px solid;
+  border-color: var(--crt-shadow) var(--crt-line-lt2) var(--crt-line-lt2) var(--crt-shadow);
+}
+
+/* ---------- 4. Surfaces ---------- */
+.crt-panel {
+  background: var(--crt-bg-panel);
+  border: 2px solid;
+  border-color: var(--crt-bevel) var(--crt-shadow) var(--crt-shadow) var(--crt-bevel);
+  box-shadow: var(--crt-shadow-raised);
+}
+.crt-panel > .crt-titlebar { margin: 0; }
+.crt-panel-body { padding: 12px 14px; }
+
+/* Title bar with two thin accent rules behind the text, like old window chrome */
+.crt-titlebar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; height: 24px;
+  background-color: var(--crt-bg-head);
+  background-image:
+    linear-gradient(var(--crt-acc-dim), var(--crt-acc-dim)),
+    linear-gradient(var(--crt-acc-dim), var(--crt-acc-dim));
+  background-position: 0 9px, 0 13px;
+  background-size: 100% 1px, 100% 1px;
+  background-repeat: no-repeat;
+  color: var(--crt-acc-lt);
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em;
+}
+.crt-titlebar > span { background: var(--crt-bg-head); padding: 0 6px; } /* text masks the rules */
+
+.crt-well {                    /* sunken display area */
+  background: var(--crt-bg-well);
+  border: 1px solid;
+  border-color: var(--crt-shadow) var(--crt-line-lt2) var(--crt-line-lt2) var(--crt-shadow);
+  padding: 8px 10px;
+}
+.crt-dither {                  /* 4px checkerboard fill */
+  background-color: var(--crt-bg-well);
+  background-image: repeating-conic-gradient(var(--crt-sel-bg) 0% 25%, transparent 0% 50%);
+  background-size: 4px 4px;
+}
+.crt-hatch {                   /* vertical pinstripes */
+  background-image: repeating-linear-gradient(90deg, var(--crt-hatch-a) 0 2px, var(--crt-hatch-b) 2px 4px);
+}
+.crt-grid-bg {                 /* graph-paper grid */
+  background-color: var(--crt-bg-1);
+  background-image:
+    linear-gradient(var(--crt-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--crt-line) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Fieldset-style group box with a label sitting on the border */
+.crt-legend-box { position: relative; border: 1px solid var(--crt-line-lt); padding: 14px 12px 10px; margin-top: 8px; }
+.crt-legend-box > .crt-legend {
+  position: absolute; top: -8px; left: 8px; padding: 0 6px;
+  background: var(--crt-bg-panel);
+  font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--crt-acc);
+}
+
+/* ---------- 5. Buttons ---------- */
+.crt-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 28px; padding: 0 12px;
+  font: inherit; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--crt-ink-2);
+  background: var(--crt-btn-face);
+  border: 1px solid;
+  border-color: var(--crt-bevel) var(--crt-shadow) var(--crt-shadow) var(--crt-bevel);
+  box-shadow: 2px 2px 0 #00000080;
+  cursor: pointer;
+}
+.crt-btn:hover { color: var(--crt-acc-lt); }
+.crt-btn:active, .crt-btn[aria-pressed="true"] {   /* pressed = bevel flips */
+  border-color: var(--crt-shadow) var(--crt-bevel) var(--crt-bevel) var(--crt-shadow);
+  box-shadow: none;
+  transform: translate(1px, 1px);
+}
+.crt-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.crt-btn-primary {
+  background: var(--crt-btn); color: var(--crt-ink);
+  border-color: var(--crt-bevel-lt) var(--crt-shadow) var(--crt-shadow) var(--crt-bevel-lt);
+}
+.crt-btn-primary:hover { background: var(--crt-btn-hover); color: var(--crt-ink); }
+.crt-btn-danger { color: var(--crt-danger); }
+
+/* ---------- 6. Inputs ---------- */
+.crt-field {
+  height: 28px; padding: 0 8px; width: 100%;
+  font: inherit; color: var(--crt-ink);
+  background: var(--crt-bg-well);
+  border: 1px solid;
+  border-color: var(--crt-shadow) var(--crt-line-lt2) var(--crt-line-lt2) var(--crt-shadow);
+}
+.crt-field::placeholder { color: var(--crt-ink-3); opacity: .6; }
+.crt-field:focus { outline: none; border-color: var(--crt-acc-dim); box-shadow: 0 0 0 1px var(--crt-acc-dim); }
+select.crt-field { appearance: none; padding-right: 24px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--crt-acc) 50%), linear-gradient(-45deg, transparent 50%, var(--crt-acc) 50%);
+  background-position: right 12px center, right 7px center; background-size: 5px 5px; background-repeat: no-repeat; }
+
+/* Toggle switch: <label class="crt-switch"><input type="checkbox"><span class="crt-switch-track"></span> Text</label> */
+.crt-switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: var(--crt-ink-2); user-select: none; }
+.crt-switch > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.crt-switch-track {
+  position: relative; flex: none; width: 36px; height: 18px;
+  background: var(--crt-bg-well);
+  border: 1px solid;
+  border-color: var(--crt-shadow) var(--crt-line-lt2) var(--crt-line-lt2) var(--crt-shadow);
+}
+.crt-switch-track::after {      /* the sliding block */
+  content: ""; position: absolute; top: 1px; left: 1px; width: 16px; height: 14px;
+  background: var(--crt-btn-face);
+  border: 1px solid;
+  border-color: var(--crt-bevel) var(--crt-shadow) var(--crt-shadow) var(--crt-bevel);
+  transition: transform .12s steps(3);
+}
+.crt-switch > input:checked + .crt-switch-track::after {
+  transform: translateX(16px);
+  background: var(--crt-acc);
+  box-shadow: 0 0 7px var(--crt-acc);
+}
+.crt-switch > input:focus-visible + .crt-switch-track { outline: 1px dashed var(--crt-acc); outline-offset: 2px; }
+.crt-switch > input:disabled + .crt-switch-track { opacity: .5; }
+.crt-switch[data-busy] .crt-switch-track { /* "working" barber pole */
+  background-image: repeating-linear-gradient(-45deg, transparent 0 6px, var(--crt-acc-dim) 6px 12px);
+  background-size: 17px 17px;
+  animation: crt-barber .6s linear infinite;
+}
+
+/* Range slider styled as a segmented meter */
+.crt-range { appearance: none; width: 100%; height: 14px; background: transparent; cursor: pointer; }
+.crt-range::-webkit-slider-runnable-track {
+  height: 10px;
+  background: repeating-linear-gradient(90deg, var(--crt-acc-dim) 0 3px, var(--crt-bg-1) 3px 5px);
+  border: 1px solid; border-color: var(--crt-shadow) var(--crt-line-lt2) var(--crt-line-lt2) var(--crt-shadow);
+}
+.crt-range::-moz-range-track {
+  height: 8px;
+  background: repeating-linear-gradient(90deg, var(--crt-acc-dim) 0 3px, var(--crt-bg-1) 3px 5px);
+  border: 1px solid; border-color: var(--crt-shadow) var(--crt-line-lt2) var(--crt-line-lt2) var(--crt-shadow);
+}
+.crt-range::-webkit-slider-thumb {
+  appearance: none; width: 12px; height: 18px; margin-top: -5px;
+  background: linear-gradient(to right, var(--crt-ink) 0 40%, var(--crt-shadow) 40% 60%, var(--crt-ink) 60%);
+  border: 1px solid var(--crt-shadow);
+}
+.crt-range::-moz-range-thumb {
+  width: 10px; height: 16px; border-radius: 0;
+  background: linear-gradient(to right, var(--crt-ink) 0 40%, var(--crt-shadow) 40% 60%, var(--crt-ink) 60%);
+  border: 1px solid var(--crt-shadow);
+}
+.crt-range:hover::-webkit-slider-thumb { background: linear-gradient(to right, var(--crt-acc-lt) 0 40%, var(--crt-shadow) 40% 60%, var(--crt-acc-lt) 60%); }
+
+/* Vertical fader: <div class="crt-fader" style="--value: 70%"><div class="crt-fader-cap"></div></div> */
+.crt-fader {
+  --value: 50%;
+  position: relative; width: 14px; height: 120px;
+  border: 1px solid; border-color: var(--crt-shadow) var(--crt-line-lt2) var(--crt-line-lt2) var(--crt-shadow);
+  background:
+    linear-gradient(to top, transparent 0 var(--value), var(--crt-bg-well) var(--value) 100%),
+    repeating-linear-gradient(0deg, var(--crt-acc) 0 3px, var(--crt-bg-1) 3px 5px);
+}
+.crt-fader-cap {
+  position: absolute; left: -7px; right: -7px; height: 12px;
+  bottom: calc(var(--value) - 6px);
+  background: linear-gradient(to bottom, var(--crt-ink-2) 0 45%, var(--crt-shadow) 45% 55%, var(--crt-ink-2) 55%);
+  border: 1px solid; border-color: var(--crt-bevel) var(--crt-shadow) var(--crt-shadow) var(--crt-bevel);
+}
+
+/* ---------- 7. Indicators ---------- */
+.crt-led {
+  display: inline-block; flex: none; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--crt-acc); box-shadow: 0 0 7px var(--crt-acc);
+}
+.crt-led.off   { background: var(--crt-bg-2); box-shadow: inset 0 0 0 1px var(--crt-shadow); }
+.crt-led.amber { background: var(--crt-led); box-shadow: 0 0 7px var(--crt-led); }
+.crt-led.red   { background: var(--crt-danger); box-shadow: 0 0 7px var(--crt-danger); }
+.crt-led.blink { animation: crt-blink 1s steps(1) infinite; }
+
+.crt-badge {
+  display: inline-block; padding: 1px 6px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--crt-acc-lt); background: var(--crt-sel-bg); border: 1px solid var(--crt-acc-dim);
+}
+
+/* Segmented progress bar: set --progress (0-1) on .crt-meter */
+.crt-meter { display: flex; gap: 2px; padding: 3px; background: var(--crt-bg-well);
+  border: 1px solid; border-color: var(--crt-shadow) var(--crt-line-lt2) var(--crt-line-lt2) var(--crt-shadow); }
+.crt-meter > i { flex: 1; height: 10px; background: var(--crt-bg-2); }
+.crt-meter > i.on { background: var(--crt-acc); box-shadow: 0 0 4px var(--crt-acc); }
+.crt-meter.running > i { animation: crt-run 1.2s linear infinite; animation-delay: calc(var(--i, 0) * 80ms); }
+
+/* ---------- 8. Tables and menus ---------- */
+.crt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.crt-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--crt-acc); background: var(--crt-bg-head); padding: 4px 8px; border-bottom: 1px solid var(--crt-line); }
+.crt-table td { padding: 4px 8px; border-bottom: 1px solid var(--crt-bg-2); }
+.crt-table tr:nth-child(even) td { background: var(--crt-bg-1); }
+.crt-table tr:hover td, .crt-table tr[aria-selected="true"] td { background: var(--crt-sel-bg); color: var(--crt-ink); }
+
+.crt-menu { background: var(--crt-bg-panel); padding: 2px; box-shadow: var(--crt-shadow-menu);
+  border: 1px solid; border-color: var(--crt-bevel) var(--crt-shadow) var(--crt-shadow) var(--crt-bevel); }
+.crt-menu > * { display: block; width: 100%; padding: 4px 10px; color: var(--crt-ink-2); text-decoration: none;
+  background: none; border: 0; font: inherit; text-align: left; cursor: pointer; }
+.crt-menu > *:hover { background: var(--crt-btn); color: var(--crt-ink); }
+
+/* ---------- 9. Header and footer bands ----------
+ * Full-width strips with the vertical pinstripe fill.
+ * <footer class="crt-footer"><div class="crt-footer-inner">
+ *   <p>Text</p><nav><a class="crt-footer-link" href="#">Link</a></nav>
+ * </div></footer>
+ */
+.crt-footer, .crt-header {
+  position: relative;
+  background-color: var(--crt-bg-2);
+  background-image: repeating-linear-gradient(90deg, var(--crt-hatch-a) 0 2px, var(--crt-hatch-b) 2px 4px);
+  color: var(--crt-ink-3);
+  letter-spacing: .08em;
+  font-size: 12px;
+}
+.crt-footer { border-top: 1px solid #ffffff1a; }
+.crt-header { border-bottom: 2px solid var(--crt-shadow); color: var(--crt-ink); }
+.crt-footer-inner {
+  max-width: 1100px; margin: 0 auto; padding: 18px 16px;
+  display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between;
+}
+.crt-footer-inner p { margin: 0; color: var(--crt-ink-2); font-size: 13px; letter-spacing: .02em; }
+.crt-footer-inner nav { display: flex; flex-wrap: wrap; gap: 8px; }
+.crt-footer-link {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px;
+  color: var(--crt-ink-2); text-decoration: none; text-transform: uppercase; font-size: 11px; letter-spacing: .08em;
+  background: var(--crt-btn-face);
+  border: 1px solid;
+  border-color: var(--crt-bevel) var(--crt-shadow) var(--crt-shadow) var(--crt-bevel);
+}
+.crt-footer-link:hover { color: var(--crt-acc-lt); }
+.crt-footer-link:active { border-color: var(--crt-shadow) var(--crt-bevel) var(--crt-bevel) var(--crt-shadow); }
+
+/* ---------- 10. CRT effects ---------- */
+/* Scanlines over the whole page: add .crt-scanlines to <body> */
+.crt-scanlines::after {
+  content: ""; position: fixed; inset: 0; z-index: 50; pointer-events: none;
+  background: repeating-linear-gradient(#00000042 0 1px, transparent 1px 3px);
+  opacity: var(--crt-scanline-opacity);
+  animation: crt-flicker 6s ease-in-out infinite;
+}
+/* Faint phosphor glow on text inside an element */
+.crt-glow { text-shadow: 0 0 6px color-mix(in srgb, var(--crt-acc) 50%, transparent); }
+
+/* Blinking block cursor: <span class="crt-cursor"></span> */
+.crt-cursor { display: inline-block; width: .6em; height: 1em; vertical-align: text-bottom;
+  background: var(--crt-acc); animation: crt-blink 1s steps(1) infinite; }
+
+/* "Switch off" collapse: add .crt-off to an element (it shrinks to a line, then a dot) */
+.crt-off { animation: crt-switch-off .45s ease-in forwards; }
+
+/* Degauss wobble: add .crt-degauss for 0.7 s (see demo.html) */
+.crt-degauss { animation: crt-degauss .7s ease-out; }
+
+@keyframes crt-flicker { 0%, 100% { opacity: var(--crt-scanline-opacity); } 50% { opacity: calc(var(--crt-scanline-opacity) * .86); } }
+@keyframes crt-blink { 50% { opacity: 0; } }
+@keyframes crt-barber { to { background-position: 17px 0; } }
+@keyframes crt-run { 0%, 100% { opacity: .25; } 12% { opacity: 1; background: var(--crt-led); } 40% { opacity: .5; } }
+@keyframes crt-switch-off {
+  0%   { transform: scale(1, 1); filter: brightness(1); }
+  45%  { transform: scale(1, .01); filter: brightness(3); }
+  75%  { transform: scale(.01, .01); opacity: 1; }
+  100% { transform: scale(.01, .01); opacity: 0; }
+}
+@keyframes crt-degauss {
+  0%, 100% { filter: none; transform: none; }
+  8%  { filter: hue-rotate(70deg) saturate(1.8); transform: translateX(-4px) skewX(1.6deg) scale(1.006); }
+  18% { filter: hue-rotate(-50deg) saturate(1.6); transform: translateX(3px) skewX(-1.2deg); }
+  30% { filter: hue-rotate(35deg) saturate(1.4); transform: translateX(-2px) skewX(.8deg); }
+  44% { filter: hue-rotate(-20deg) saturate(1.2); transform: translateX(1.5px) skewX(-.5deg); }
+  60% { filter: hue-rotate(8deg) saturate(1.1); transform: translateX(-.75px) skewX(.25deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crt-scanlines::after, .crt-led.blink, .crt-cursor, .crt-meter.running > i,
+  .crt-switch[data-busy] .crt-switch-track, .crt-degauss { animation: none; }
+}
