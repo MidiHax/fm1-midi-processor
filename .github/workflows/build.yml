@@ -7,7 +7,9 @@
 # as a local build of the same commit.
 #
 # Every run uploads the firmware as an artifact. Pushing a tag such as
-# v0.1.0 also creates a GitHub Release with the firmware attached.
+# v0.1.0 also creates a GitHub Release with the firmware attached, and
+# publishes that firmware to html/firmware on main. The tag must match
+# MIDIPROC_VERSION in src/app/version.h on main.
 name: Build firmware
 
 on:
@@ -90,12 +92,13 @@ jobs:
           New-Item -ItemType Directory -Force out | Out-Null
           Copy-Item $fw out/FM1-MidiProc.fwsc
           Copy-Item src/build/dx7/build-identity.json out/
+          Copy-Item src/build/dx7/firmware-report.json out/
           Copy-Item src/build/updater/FM1-MidiProc-Updater.html out/
 
           # Does the firmware published on the site come from this commit?
           $site = Get-Content html/firmware/manifest.json -Raw | ConvertFrom-Json
           $match = if ($site.build_id -eq $id) { 'yes' } else { "no (site has $($site.build_id.Substring(0, 16)))" }
-          if ($site.build_id -ne $id) { Write-Host "::notice title=Site firmware differs::html/firmware is build $($site.build_id.Substring(0, 16)); this commit builds $($id.Substring(0, 16)). Run tools/make_site.py --firmware after a local build to publish it." }
+          if ($site.build_id -ne $id) { Write-Host "::notice title=Site firmware differs::html/firmware is build $($site.build_id.Substring(0, 16)); this commit builds $($id.Substring(0, 16)). Push a version tag, or run tools/make_site.py --firmware after a local build, to publish it." }
           @(
             "### FM-1 MIDI Processor $version",
             '',
@@ -130,3 +133,35 @@ jobs:
             out/build-identity.json
             out/FM1-MidiProc-Updater.html
           generate_release_notes: true
+
+  publish-site:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - name: Publish the firmware to html/firmware
+        run: |
+          version=$(sed -n 's/^#define MIDIPROC_VERSION "\(.*\)"$/\1/p' src/app/version.h)
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::main is at version $version, not $GITHUB_REF_NAME. The site was not updated."
+            exit 1
+          fi
+          mkdir -p src/build/dx7/generated
+          cp out/FM1-MidiProc.fwsc src/build/dx7/generated/FM1_OFFICIAL_OPEN.fwsc
+          cp out/build-identity.json out/firmware-report.json src/build/dx7/
+          python3 tools/make_site.py --firmware
+          git add README.md html/firmware
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Site: firmware $GITHUB_REF_NAME"
+          git push origin main

@@ -7,6 +7,6 @@
 
 /* FM-1 MIDI Processor's own version, shown on the splash screen. The two
  * above belong to the SDK and the updater; don't change them for releases. */
-#define MIDIPROC_VERSION "0.1.0"
+#define MIDIPROC_VERSION "0.1.1"
 
 #endif
