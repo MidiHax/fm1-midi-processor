@@ -85,6 +85,14 @@
     {
      "control": "G5",
      "action": "Selected row (NON/NOF/PAT/CC/PC) to Build Message Rule OUT; opens it (GLO returns)"
+    },
+    {
+     "control": "ENV",
+     "action": "Same as F5"
+    },
+    {
+     "control": "LFO",
+     "action": "Same as G5"
     }
    ],
    "elements": [
@@ -4869,7 +4877,7 @@
      "text": "REPLACES A RULE",
      "color": "0xFD20",
      "bg": null,
-     "notes": "F5:IN  G5:OUT / NEEDS IN / NEEDS OUT / REC TO ADD (dim), TYPE MISMATCH, LIST FULL (32), PATCH FULL (256) (red), REPLACES A RULE (amber), ADDED: USB 01 NOTE (green, 3 s)",
+     "notes": "Blank when both halves are empty / NEEDS IN / NEEDS OUT / REC TO ADD (dim), TYPE MISMATCH, LIST FULL (32), PATCH FULL (256) (red), REPLACES A RULE (amber), ADDED: USB 01 NOTE (green, 3 s)",
      "id": "e84bbe9f"
     },
     {

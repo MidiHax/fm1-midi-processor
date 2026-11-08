@@ -145,7 +145,7 @@ main { min-width: 0; }
   <!-- annotations -->
   <path class="annline" d="M120 548 L120 556 L880 556 L880 548"/>
 </svg>
-<p class="small muted" style="margin-top:-4px">Lower row: the 16 white keys pick MIDI channels 1–16 on most pages. Upper row: on the monitor, the first five black keys (<b>OP1–OP5</b>) are the <a href="#search">search keys</a>, and the last three (<b>C#5</b>, <b>D#5</b>, <b>F#5</b>) are the <a href="#shortcuts">shortcuts</a>. The last two white keys (<b>F5</b>, <b>G5</b>) send the selected message to the <a href="#rule-builder">Rule Builder</a>. On <a href="#live-keys">Live Keys</a> all 27 keys play notes.</p>
+<p class="small muted" style="margin-top:-4px">Lower row: the 16 white keys pick MIDI channels 1–16 on most pages. Upper row: on the monitor, the first five black keys (<b>OP1–OP5</b>) are the <a href="#search">search keys</a>, and the last three (<b>C#5</b>, <b>D#5</b>, <b>F#5</b>) are the <a href="#shortcuts">shortcuts</a>. The last two white keys (<b>F5</b>, <b>G5</b>) send the selected message to the <a href="#rule-builder">Rule Builder</a>, as <kbd>ENV</kbd> and <kbd>LFO</kbd> do. On <a href="#live-keys">Live Keys</a> all 27 keys play notes.</p>
 
 <div class="table-wrap"><table>
   <thead><tr><th>Control</th><th>What it does</th></tr></thead>
@@ -158,7 +158,7 @@ main { min-width: 0; }
     <tr><td><kbd>SAVE</kbd></td><td><a href="#patches">Patch Select</a> → <a href="#sysex-dump">Sysex Dump</a></td></tr>
     <tr><td><kbd>ARP</kbd></td><td><a href="#live-keys">Live Keys</a></td></tr>
     <tr><td><kbd>GLO</kbd></td><td><a href="#rule-builder">Build Message Rule</a>, from any page. Press again to go back to where you were.</td></tr>
-    <tr><td><kbd>ENV</kbd> <kbd>LFO</kbd></td><td>On Live Keys and Knobs Config: send the note, program change or knob CC to the <a href="#rule-builder">Rule Builder</a>'s IN or OUT.</td></tr>
+    <tr><td><kbd>ENV</kbd> <kbd>LFO</kbd></td><td>On the monitor, Live Keys and Knobs Config: send the selected message, note, program change or knob CC to the <a href="#rule-builder">Rule Builder</a>'s IN or OUT.</td></tr>
     <tr><td>SELECT</td><td>Moves the focus from field to field, or scrolls a list.</td></tr>
     <tr><td>ALGORITHM</td><td>Changes the focused value.</td></tr>
     <tr><td><kbd>OCT−</kbd> <kbd>OCT+</kbd></td><td>Step the focused value down or up, or scroll. On Live Keys they shift the octave. Lit on the pages that use them.</td></tr>
@@ -301,8 +301,8 @@ main { min-width: 0; }
   <tbody>
     <tr><td><b>C#5</b></td><td>Message rule</td><td>Notes, CC, PC</td><td>Opens Add Message Rule with the message's port, channel, type and value filled in, and the output set to the same value. If a rule for that value already exists, it opens that rule. Nothing changes until you save with <kbd>REC</kbd>.</td></tr>
     <tr><td><b>D#5</b></td><td>Channel rule</td><td>Any channel message</td><td>Opens Add Channel Rule with the message's port and channel, output set to the same channel, or the existing rule for that channel.</td></tr>
-    <tr><td><b>F5</b></td><td>Rule Builder IN</td><td>Notes, CC, PC</td><td>Puts the message's port, channel, type and value into the <a href="#rule-builder">Rule Builder</a>'s IN and opens it.</td></tr>
-    <tr><td><b>G5</b></td><td>Rule Builder OUT</td><td>Notes, CC, PC</td><td>Puts the message's channel and value into the Rule Builder's OUT and opens it.</td></tr>
+    <tr><td><b>F5</b> or <kbd>ENV</kbd></td><td>Rule Builder IN</td><td>Notes, CC, PC</td><td>Puts the message's port, channel, type and value into the <a href="#rule-builder">Rule Builder</a>'s IN and opens it.</td></tr>
+    <tr><td><b>G5</b> or <kbd>LFO</kbd></td><td>Rule Builder OUT</td><td>Notes, CC, PC</td><td>Puts the message's channel and value into the Rule Builder's OUT and opens it.</td></tr>
     <tr><td><b>F#5</b></td><td>Trigger</td><td>NON, NOF, CC, PC</td><td>Adds a trigger at once and opens it: D1 is the message's value, D2 is 0–127 (1–127 for Note On), Pass Input YES, Fire ENTER. Then add its messages with <kbd>PLAY</kbd>.</td></tr>
   </tbody>
 </table></div>
@@ -423,7 +423,7 @@ main { min-width: 0; }
     </ol>
     <ul>
       <li><kbd>GLO</kbd> opens the page from anywhere, and pressing it again returns to the page you came from. The monitor keeps the same row selected.</li>
-      <li><b>F5</b>/<b>G5</b> on the monitor, and <kbd>ENV</kbd>/<kbd>LFO</kbd> on Live Keys and Knobs Config, fill IN/OUT. Live Keys gives the last note or program change it sent; Knobs Config gives the focused knob's CC. Their port is USB; change it on the page if needed.</li>
+      <li><kbd>ENV</kbd>/<kbd>LFO</kbd> fill IN/OUT on the monitor, Live Keys and Knobs Config, and <b>F5</b>/<b>G5</b> also do on the monitor. The monitor gives the selected message; Live Keys gives the last note or program change it sent; Knobs Config gives the focused knob's CC. For those last two the port is USB; change it on the page if needed.</li>
       <li>IN and OUT must be the same kind of message: a rule changes a note number, a CC number or a program, but can't turn one into another. <code>TYPE MISMATCH</code> in red means REC won't save.</li>
       <li>Every field can be edited with SELECT, ALGORITHM and OCT±, and the white keys set the focused channel. An empty half (<code>---</code>) starts at USB, channel 1, note 60.</li>
       <li>A rule for the same input is replaced (<code>REPLACES A RULE</code>). A full list shows <code>LIST FULL (32)</code>.</li>

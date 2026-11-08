@@ -47,7 +47,7 @@ Pressing a screen button that owns several screens cycles through them. The firs
 - **Shortcuts:** the bottom row shown is selected (black on blue, so its fate colour is hidden while selected). Scroll back to select an older message; the view stays put as new MIDI arrives. Three black keys act on it at once, with no menu, and each is lit only when it applies:
   - **C#5 message rule:** notes (NON, NOF, PAT), CC and PC. Opens Add Message Rule with port, channel, type and input from the message and output = input, or the existing rule for that input. Nothing changes until REC saves it.
   - **D#5 channel rule:** any channel message. Opens Add Channel Rule with port and input channel, output = the same channel, or the existing rule.
-  - **F5 / G5 rule builder:** put the message (NON, NOF, PAT, CC, PC) into Build Message Rule's IN / OUT and open it (`rule-builder.md`).
+  - **F5 / G5 (or ENV / LFO) rule builder:** put the message (NON, NOF, PAT, CC, PC) into Build Message Rule's IN / OUT and open it (`rule-builder.md`).
   - **F#5 trigger:** NON, NOF, CC and PC. Adds a trigger at once (trigger edits are live): D1 range = the value, D2 0–127 (NON 1–127), Pass Input YES, Fire ENTER, no messages, and opens Edit Trigger. If 32 triggers exist, the list opens showing TRIGGERS FULL.
   - PLAY was the first idea; the keys replaced it, so PLAY still does nothing on the monitor.
 - **Search (built, `monitor-search.md`):**
@@ -139,7 +139,7 @@ Pressing a screen button that owns several screens cycles through them. The firs
 
 - Design and settled answers Q1–Q10: `rule-builder.md`.
 - **Build Message Rule** is a scratchpad (RAM only): GLO opens it from any page and returns to the page it came from. GLO is lit on every page.
-- **F5 / G5** on the monitor put the selected row (NON, NOF, PAT, CC, PC) into IN / OUT and open it. **ENV / LFO** do the same on Live Keys (last note or Program Change sent) and Knobs Config (the focused knob's CC), with port USB.
+- **F5 / G5** or **ENV / LFO** on the monitor put the selected row (NON, NOF, PAT, CC, PC) into IN / OUT and open it. **ENV / LFO** do the same on Live Keys (last note or Program Change sent) and Knobs Config (the focused knob's CC), with port USB.
 - OUT must have IN's type (`TYPE MISMATCH`). REC (two presses) adds the rule to its Message Remap list, replacing a rule with the same input, then clears the scratchpad.
 
 ## Settings storage

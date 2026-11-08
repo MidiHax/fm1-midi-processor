@@ -65,7 +65,7 @@ This shapes two choices below. The shortcuts can only use NON, NOF, PAT, CC and 
 
 | Shows | When |
 |---|---|
-| `F5:IN  G5:OUT` (dim) | Both halves empty |
+| Blank | Both halves empty (row 13 has the hint) |
 | `NEEDS OUT` / `NEEDS IN` (dim) | One half set |
 | `REC TO ADD` (dim) | Both set, ready to save |
 | `TYPE MISMATCH` (red) | The halves came from different types. REC does nothing (Q1). |
@@ -85,12 +85,14 @@ How a mismatch is tracked: OUT remembers the type it was set from. Setting IN, o
 
 ## Shortcuts
 
-### MIDI Monitor: F5 and G5
+### MIDI Monitor: F5 and G5, or ENV and LFO
 
-| Key | Puts the selected row into |
+| Control | Puts the selected row into |
 |---|---|
-| **F5** | IN: port, channel, type, value |
-| **G5** | OUT: value, channel |
+| **F5** or **ENV** | IN: port, channel, type, value |
+| **G5** or **LFO** | OUT: value, channel |
+
+ENV and LFO work as on Live Keys and Knobs Config, so they fill the builder on every page that can feed it.
 
 - Like C#5, D#5 and F#5, each acts at once and is **lit only when it applies**: the selected row is NON, NOF, PAT, CC or PC (Q2).
 - Both open the screen, as your spec says (Q6). GLO returns to the monitor with the same row selected and the scroll position unchanged, ready for the next key.
@@ -164,7 +166,7 @@ F5/ENV:IN G5/LFO:OUT
 - **`screen.c`:** GLO opens the page from anywhere (`ui_open_builder`, which remembers the page) and returns from it, and its LED is lit. A patch load while on the builder makes GLO return to the top-level page instead of a sub-page.
 - **`monitor.c`:** returning with GLO (`ui_returning_from_builder`) keeps the scroll position, and new events keep the same row selected.
 - **Nothing on the MIDI path changes.** The builder only calls the existing rule save.
-- **Host tests:** `tools/host_tests/monitor` covers F5/G5, GLO back, mismatch, save and clear, ADDED, defaults, white keys, cancel, replace and LIST FULL (47 checks with the search tests).
+- **Host tests:** `tools/host_tests/monitor` covers F5/G5, ENV/LFO on the monitor, GLO back, mismatch, save and clear, ADDED, defaults, white keys, cancel, replace and LIST FULL (52 checks with the search tests).
 
 ---
 

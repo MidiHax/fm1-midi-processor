@@ -365,8 +365,8 @@ static void enter(void)
 /* ---- Shortcuts -------------------------------------------------------------
  * The bottom row shown is selected (black on blue). The last three black
  * keys turn its message into a rule or trigger, and the last two white keys
- * put it into the rule builder; each key is lit when its shortcut applies
- * to the selected message. */
+ * (or ENV and LFO, as on Live Keys and Knobs Config) put it into the rule
+ * builder; each is lit when its shortcut applies to the selected message. */
 enum { SHORTCUT_MSG_RULE, SHORTCUT_CH_RULE, SHORTCUT_TRIGGER, SHORTCUT_BUILD_IN, SHORTCUT_BUILD_OUT,
        SHORTCUTS };
 static const uint8_t shortcut_key[SHORTCUTS] = {
@@ -411,13 +411,23 @@ static int shortcut_applies(unsigned s, const struct mon_entry *e)
     }
 }
 
+/* The panel button that also runs a shortcut, or -1. */
+static int shortcut_button(unsigned s)
+{
+    return s == SHORTCUT_BUILD_IN ? BTN_ENV : s == SHORTCUT_BUILD_OUT ? BTN_LFO : -1;
+}
+
 /* Returns 1 if a shortcut key opened another page. */
 static int run_shortcut(const struct ui_input *in, const struct mon_entry *e)
 {
     for (unsigned s = 0; s < SHORTCUTS; ++s) {
         int lit = shortcut_applies(s, e);
+        int button = shortcut_button(s);
         ui_led(UI_LED_KEY(shortcut_key[s]), lit);
-        if (!lit || !(in->keys_pressed & (1UL << shortcut_key[s]))) continue;
+        if (button >= 0) ui_led((unsigned)button, lit);
+        int hit = (in->keys_pressed & (1UL << shortcut_key[s])) != 0 ||
+                  (button >= 0 && (in->pressed & UI_BUTTON(button)) != 0);
+        if (!lit || !hit) continue;
         unsigned channel = e->status & 15U;
         switch (s) {
         case SHORTCUT_MSG_RULE:

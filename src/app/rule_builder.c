@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
  * Build Message Rule: a scratchpad for message remap rules, filled from
- * monitor rows (F5 = IN, G5 = OUT), Live Keys and Knobs Config (ENV = IN,
- * LFO = OUT). Design: design/rule-builder.md; layout:
+ * monitor rows, Live Keys and Knobs Config (ENV = IN, LFO = OUT; on the
+ * monitor also F5 = IN, G5 = OUT). Design: design/rule-builder.md; layout:
  * design/fm1-screens.json, "Build Message Rule".
  *
  *   row 0   BUILD MESSAGE RULE
@@ -242,7 +242,7 @@ static void update(const struct ui_input *in, int redraw)
     } else if (rb.out_set) {
         ui_print(ROW_STATUS, 0, "NEEDS IN            ", UI_DIM);
     } else {
-        ui_print(ROW_STATUS, 0, "F5:IN  G5:OUT       ", UI_DIM);
+        ui_clear_to_end(ROW_STATUS, 0);
     }
     if (rb.save.armed) ui_print(ROW_SAVE, 0, "REC AGAIN TO SAVE   ", UI_DIM);
     else ui_clear_to_end(ROW_SAVE, 0);

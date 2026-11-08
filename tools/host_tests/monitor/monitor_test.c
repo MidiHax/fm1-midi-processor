@@ -1,7 +1,7 @@
 /* Host tests of the MIDI Monitor search (src/app/monitor.c, monitor_search.c):
  * what the monitor shows, the OP keys (short press / hold), the search pages
  * and the shortcuts on the shown rows. Also the rule builder
- * (src/app/rule_builder.c) and its F5/G5 shortcuts. Run ../run.bat. */
+ * (src/app/rule_builder.c) and its F5/G5 and ENV/LFO shortcuts. Run ../run.bat. */
 #include "midiproc.h"
 #include <stdio.h>
 
@@ -319,7 +319,7 @@ int main(void)
           "second REC saves TRS 01 NOTE 28 -> 62 ch 3");
     check(!strcmp(row(9), "ADDED: TRS 01 NOTE") && !strcmp(row(3), "VALUE:---") && !leds[BTN_REC], "cleared, ADDED shown");
     step(3100, 0, 0, 0, 0, 0);
-    check(!strcmp(row(9), "F5:IN  G5:OUT"), "ADDED clears after 3 s");
+    check(!strcmp(row(9), ""), "ADDED clears after 3 s");
     /* Editing an empty half starts it from defaults: USB 01 NOTE 60. */
     step(10, 0, 0, 3, 0, 0);  /* focus IN VALUE */
     step(10, 0, 0, 0, 1, 0);  /* 60 -> 61 */
@@ -354,6 +354,23 @@ int main(void)
     log3(1, 0xE0, 0, 64, 3);
     idle();
     check(!leds[UI_LED_KEY(F5)] && !leds[UI_LED_KEY(G5)], "F5/G5 dark on PB");
+    check(!leds[BTN_ENV] && !leds[BTN_LFO], "ENV/LFO dark on PB");
+    step(10, 0, 0, 0, 0, UI_BUTTON(BTN_ENV));
+    check(current == &monitor_page, "ENV does nothing on PB");
+    /* ENV/LFO do the same as F5/G5. */
+    log3(1, 0x93, 64, 80, 3); /* U 04 NON E4 */
+    idle();
+    check(leds[BTN_ENV] && leds[BTN_LFO], "ENV/LFO lit on a note row");
+    step(10, 0, 0, 0, 0, UI_BUTTON(BTN_ENV));
+    idle();
+    check(current == &rule_builder_page && strstr(row(2), "P:USB") && strstr(row(2), "CH:04") &&
+          strstr(row(2), "TYP:NOTE") && !strcmp(row(3), "VALUE:064"), "ENV sets IN and opens the builder");
+    glo_back();
+    log3(0, 0x95, 65, 80, 3); /* T 06 NON F4 */
+    idle();
+    step(10, 0, 0, 0, 0, UI_BUTTON(BTN_LFO));
+    idle();
+    check(current == &rule_builder_page && !strcmp(row(6), "CH:06 VALUE:065"), "LFO sets OUT and opens the builder");
 
     printf("%d/%d passed\n", checks - failures, checks);
     return failures != 0;
