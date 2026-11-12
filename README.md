@@ -5,6 +5,7 @@
 Custom firmware that turns the **M-VAVE FM-1** into a stand-alone MIDI processor: monitor, filter, remap, re-channelize and trigger MIDI without a computer.
 
 - **[Help guide](https://midihax.github.io/fm1-midi-processor/html/)**: how every page and control works, with screen captures.
+- **[Cheat sheet (PDF)](https://midihax.github.io/fm1-midi-processor/html/cheatsheet.pdf)**: one printable page with the button and screen map and the rule-building shortcuts.
 - **[Flash the firmware](https://midihax.github.io/fm1-midi-processor/html/flash.html)**: install it from desktop Chrome or Edge over USB. No software to install.
 - **[Patch editor](https://midihax.github.io/fm1-midi-processor/html/editor.html)**: edit patches from desktop Chrome or Edge over USB.
 

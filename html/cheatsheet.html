@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FM-1 Cheat Sheet</title>
+<!-- One-page printable cheat sheet. Source for cheatsheet.pdf: print to PDF at
+     Letter landscape with no header/footer (see tools/make_cheatsheet.bat). -->
+<style>
+@page { size: 11in 8.5in; margin: 0.3in; }
+:root {
+  --text: #1c2226; --dim: #5d6971; --line: #d3d9de; --panel: #f3f5f7;
+  --page: #00838f; --page-bg: #e0f3f4;
+  --build: #c2410c; --build-bg: #fdeee5;
+  --search: #6d3fc8; --search-bg: #efe9fb;
+  --act: #1d5fbf; --act-bg: #e6eefb;
+  --red: #c62828; --amber: #b26a00; --green: #2e7d32;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #fff; color: var(--text); }
+body { font: 7.9pt/1.22 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.sheet { width: 10.4in; height: 7.9in; margin: 0 auto; display: grid;
+  grid-template-rows: auto auto 1fr auto; gap: 7px; overflow: hidden; }
+@media screen { body { background: #e9ecef; padding: 16px; } .sheet { background: #fff; padding: 0.3in; width: 11in; height: 8.5in; box-shadow: 0 2px 10px rgba(0,0,0,.15); } }
+
+header { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--text); padding-bottom: 3px; }
+header h1 { font-size: 15pt; margin: 0; letter-spacing: -.01em; }
+header .sub { color: var(--dim); font-size: 9pt; }
+header .ver { margin-left: auto; color: var(--dim); font-size: 8pt; }
+
+.top { display: grid; grid-template-columns: 5.95in 1fr; gap: 12px; align-items: start; }
+.panel svg { width: 100%; height: auto; display: block; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 7.6pt; color: var(--dim); margin-top: 3px; }
+.legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; border: 1.5px solid var(--c); background: var(--b); }
+
+h2 { font-size: 9.4pt; margin: 0 0 3px; padding: 2px 6px; border-radius: 3px; color: #fff; background: var(--c, var(--text)); letter-spacing: .02em; }
+h3 { font-size: 8.4pt; margin: 6px 0 2px; color: var(--c, var(--text)); }
+section { min-width: 0; }
+table { border-collapse: collapse; width: 100%; }
+td, th { padding: 1px 4px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+th { font-size: 7.4pt; color: var(--dim); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { white-space: nowrap; }
+.k { display: inline-block; font-weight: 700; font-size: 7.6pt; padding: 0 4px; border-radius: 3px; border: 1px solid var(--c, #8a959b);
+  background: var(--b, #fff); color: var(--c, var(--text)); line-height: 1.45; white-space: nowrap; }
+.pg { --c: var(--page); --b: var(--page-bg); }
+.bd { --c: var(--build); --b: var(--build-bg); }
+.sr { --c: var(--search); --b: var(--search-bg); }
+.ac { --c: var(--act); --b: var(--act-bg); }
+.arrow { color: var(--dim); }
+.dim { color: var(--dim); }
+.mono { font-family: Consolas, "Cascadia Mono", ui-monospace, monospace; font-weight: 700; font-size: 7.8pt; }
+.red { color: var(--red); } .amber { color: var(--amber); } .green { color: var(--green); }
+ul { margin: 2px 0; padding-left: 13px; } li { margin: 1px 0; }
+.note { font-size: 7.8pt; color: var(--dim); margin: 3px 0 0; }
+
+.cols { display: grid; grid-template-columns: 0.95fr 1.25fr 0.9fr; gap: 12px; min-height: 0; }
+.recipe { counter-reset: s; list-style: none; padding: 0; margin: 2px 0 3px; }
+.recipe li { counter-increment: s; position: relative; padding: 2px 0 2px 20px; }
+.recipe li::before { content: counter(s); position: absolute; left: 0; top: 2px; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--build); color: #fff; font-weight: 700; font-size: 7.6pt; text-align: center; line-height: 14px; }
+.box { background: var(--build-bg); border-radius: 5px; padding: 4px 7px; }
+.swatch { display: inline-block; width: 22px; height: 9px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; border: 1px solid #999; }
+
+footer { border-top: 1px solid var(--line); padding-top: 3px; font-size: 7.5pt; color: var(--dim); display: flex; gap: 14px; flex-wrap: wrap; }
+footer b { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<header>
+  <h1>FM-1 MIDI Processor</h1>
+  <span class="sub">Cheat sheet: buttons, pages and rule-building shortcuts</span>
+  <span class="ver">Firmware 0.2.0 · midihax.github.io/fm1-midi-processor</span>
+</header>
+
+<div class="top">
+  <div class="panel">
+    <svg id="panel" viewBox="0 0 1000 470" role="img" aria-label="FM-1 panel with every control labelled with its function">
+      <defs><style>
+        .body{fill:#2b2f31}
+        .ctl{fill:#16191b;stroke:#4a5256;stroke-width:1.5}
+        .t{fill:#e6ebee;font:600 15px "Segoe UI",sans-serif;text-anchor:middle}
+        .s{fill:#b7c2c7;font:500 11.5px "Segoe UI",sans-serif;text-anchor:middle}
+        .off{fill:#6b767b}
+        .wk{fill:#eef1f3;stroke:#3a4246;stroke-width:1}
+        .bk{fill:#121416;stroke:#3a4246;stroke-width:1}
+        .kn{font:700 13px "Segoe UI",sans-serif;text-anchor:middle}
+        .ks{font:600 10.5px "Segoe UI",sans-serif;text-anchor:middle}
+      </style></defs>
+      <rect class="body" x="4" y="4" width="992" height="462" rx="26"/>
+      <g id="g"></g>
+    </svg>
+    <div class="legend">
+      <span style="--c:#4fd1dc;--b:#1c3a3d">Opens a page (press again to cycle)</span>
+      <span style="--c:#ff8a4c;--b:#3d2416">Rule Builder</span>
+      <span style="--c:#6aa5ff;--b:#16263d">Action / edit</span>
+      <span style="--c:#b794f6;--b:#2a1f3d">Monitor search</span>
+      <span style="--c:#6b767b;--b:#2b2f31">Unused</span>
+    </div>
+  </div>
+
+  <section>
+    <h2 style="--c:var(--page)">Page buttons</h2>
+    <table>
+      <tr><td><span class="k pg">HOME</span></td><td>MIDI Monitor</td></tr>
+      <tr><td><span class="k pg">FX</span></td><td>Ch Filter <span class="arrow">→</span> Msg Filter <span class="arrow">→</span> Msg Remap <span class="arrow">→</span> Ch Remap</td></tr>
+      <tr><td><span class="k pg">SEL</span></td><td>Event Triggers (from a trigger's sub-pages: back one level)</td></tr>
+      <tr><td><span class="k pg">EDIT</span></td><td>Knobs Config <span class="arrow">→</span> Metronome</td></tr>
+      <tr><td><span class="k pg">SEQ</span></td><td>Clock Monitor</td></tr>
+      <tr><td><span class="k pg">SAVE</span></td><td>Patch Select <span class="arrow">→</span> Sysex Dump</td></tr>
+      <tr><td><span class="k pg">ARP</span></td><td>Live Keys (all 27 keys play notes)</td></tr>
+      <tr><td><span class="k bd">GLO</span></td><td>Rule Builder, from any page. <b>GLO again</b> goes back</td></tr>
+    </table>
+    <p class="note">Press a page button again for the next page in its cycle. Changes apply at once; keep them with <span class="k pg">SAVE</span> → <span class="k ac">REC</span>×2.</p>
+    <h3 style="margin-top:8px">Monitor row colours</h3>
+    <div><span class="swatch" style="background:#fff"></span>passed <span class="swatch" style="background:#4a4a4a;margin-left:6px"></span>blocked <span class="swatch" style="background:#8c8c00;margin-left:6px"></span>remapped <span class="swatch" style="background:#4ad773;margin-left:6px"></span>triggered</div>
+    <h3 style="margin-top:8px">Patches <span class="k pg">SAVE</span></h3>
+    <div>White keys pick slot 1–16. <span class="k ac">PLAY</span> loads it; <span class="k ac">REC</span>×2 saves to it. <span class="mono">*</span> in the title = unsaved changes.</div>
+  </section>
+</div>
+
+<div class="cols">
+  <section>
+    <h2 style="--c:var(--build)">Monitor shortcuts <span style="font-weight:500">(HOME)</span></h2>
+    <p style="margin:1px 0 3px">Scroll until the message you want is the <b>bottom row</b>, then press a key. A key is lit only when it works for that message.</p>
+    <table>
+      <tr><th>Key</th><th>Does</th><th>Works for</th></tr>
+      <tr><td><span class="k bd">C#5</span></td><td>Add Message Rule, output = input (or opens the existing rule)</td><td>Note CC PC</td></tr>
+      <tr><td><span class="k bd">D#5</span></td><td>Add Channel Rule for its port + channel</td><td>Channel msgs</td></tr>
+      <tr><td><span class="k bd">F#5</span></td><td>New trigger on that value, opened. PLAY adds its messages</td><td>NON NOF CC PC</td></tr>
+      <tr><td><span class="k bd">F5</span> <span class="k bd">ENV</span></td><td>Builder <b>IN</b>: port, ch, type, value</td><td>Note CC PC</td></tr>
+      <tr><td><span class="k bd">G5</span> <span class="k bd">LFO</span></td><td>Builder <b>OUT</b>: channel, value</td><td>Note CC PC</td></tr>
+    </table>
+
+    <h3 style="--c:var(--search)">Search keys: OP1–OP5</h3>
+    <table>
+      <tr><td><span class="k sr">OP1</span> Port</td><td><span class="k sr">OP2</span> Channel</td><td><span class="k sr">OP3</span> Type</td></tr>
+      <tr><td><span class="k sr">OP4</span> Data 1</td><td colspan="2"><span class="k sr">OP5</span> Data 2 (FROM–TO, INC or EXC)</td></tr>
+    </table>
+    <ul>
+      <li><b>Tap</b> to turn a search on or off. Its LED is lit and SRCH shows in the title.</li>
+      <li><b>Hold</b> (about 1 s) to open its settings. HOME goes back.</li>
+      <li>Searches combine. They only hide rows on screen and never affect MIDI.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 style="--c:var(--build)">Rule Builder <span style="font-weight:500">(GLO): IN from one msg, OUT from another</span></h2>
+    <div class="box">
+      <ol class="recipe">
+        <li><span class="k pg">HOME</span> Select the incoming note. Press <span class="k bd">F5</span> to set <b>IN</b>.</li>
+        <li><span class="k bd">GLO</span> back. Select the target note and press <span class="k bd">G5</span> to set <b>OUT</b>.<br><span class="dim">Or: <span class="k pg">ARP</span>, play the note, then press <span class="k bd">LFO</span>.</span></li>
+        <li>Press <span class="k ac">REC</span> <span class="k ac">REC</span>. The rule joins its Message Remap list (<span class="green mono">ADDED</span>) and the scratchpad clears.</li>
+      </ol>
+    </div>
+    <h3 style="--c:var(--build)">Where IN and OUT come from</h3>
+    <table>
+      <tr><th>Page</th><th>IN / OUT</th><th>Takes</th></tr>
+      <tr><td>Monitor</td><td style="white-space:nowrap"><span class="k bd">F5</span> <span class="k bd">G5</span> / <span class="k bd">ENV</span> <span class="k bd">LFO</span></td><td>Selected row (its own port)</td></tr>
+      <tr><td>Live Keys</td><td><span class="k bd">ENV</span> <span class="k bd">LFO</span></td><td>Last note played or PC sent (port USB)</td></tr>
+      <tr><td>Knobs Config</td><td><span class="k bd">ENV</span> <span class="k bd">LFO</span></td><td>Focused knob's CC (port USB)</td></tr>
+    </table>
+    <h3 style="--c:var(--build)">On the builder page</h3>
+    <ul>
+      <li><span class="k ac">SELECT</span> moves through IN P <span class="arrow">→</span> CH <span class="arrow">→</span> TYP <span class="arrow">→</span> VALUE <span class="arrow">→</span> OUT CH <span class="arrow">→</span> VALUE. <span class="k ac">ALGORITHM</span> / <span class="k ac">OCT±</span> edit; white keys set the focused CH.</li>
+      <li>An empty half (<span class="mono">---</span>) starts at USB, ch 1, NOTE 60.</li>
+      <li><b>Same type only:</b> note→note, CC→CC, PC→PC.</li>
+      <li>Survives page changes and patch loads; clears at power-off.</li>
+    </ul>
+    <h3 style="--c:var(--build)">Status line</h3>
+    <table>
+      <tr><td class="mono dim">NEEDS IN/OUT</td><td>one half set</td><td class="mono dim">REC TO ADD</td><td>ready</td></tr>
+      <tr><td class="mono red">TYPE MISMATCH</td><td>REC won't save</td><td class="mono amber">REPLACES A RULE</td><td>same input exists</td></tr>
+      <tr><td class="mono red">LIST FULL (32)</td><td colspan="3"><span class="mono red">PATCH FULL (256)</span>: no room, so REC does nothing</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2 style="--c:var(--act);margin-top:0">Every page</h2>
+    <table>
+      <tr><td><span class="k ac">SELECT</span></td><td>Move the focus, or scroll a list</td></tr>
+      <tr><td><span class="k ac">ALGORITHM</span></td><td>Change the focused value</td></tr>
+      <tr><td><span class="k ac">OCT− / +</span></td><td>Step ±1 or scroll (Live Keys: octave)</td></tr>
+      <tr><td><span class="k">White keys</span></td><td>Pick channel 1–16 (current is lit)</td></tr>
+      <tr><td><span class="k ac">PLAY</span></td><td>Open / add a rule or trigger; load a patch</td></tr>
+      <tr><td><span class="k ac">REC</span></td><td>Save · delete · clear · send. Losing data takes <b>2 presses in 5 s</b></td></tr>
+    </table>
+    <h2 style="--c:var(--text);margin-top:6px">Rule pages</h2>
+    <h3>Message Remap <span class="k pg">FX</span></h3>
+    <ul>
+      <li>One list per port + CH + TYP (NOTE, CC, PC).</li>
+      <li><span class="k ac">PLAY</span> on a rule opens it. On <span class="mono">+ NEW RULE</span> it adds one.</li>
+      <li><span class="k ac">REC</span>×2 deletes (list) or saves (Add Rule).</li>
+      <li>NOTE rules also remap Note Off, so notes never hang.</li>
+    </ul>
+    <h3>Channel Remap</h3>
+    <ul>
+      <li>Moves a port's whole channel, <b>after</b> message rules. PLAY / REC as above.</li>
+    </ul>
+    <h3>Event Triggers <span class="k pg">SEL</span></h3>
+    <ul>
+      <li><span class="k ac">PLAY</span> opens a trigger, or adds one from <span class="mono">+ NEW TRIGGER</span>.</li>
+      <li>Edit Trigger: PLAY opens its messages; REC test-sends them. Edits apply at once.</li>
+          </ul>
+  </section>
+</div>
+
+<footer>
+  <span><b>Pipeline:</b> Channel Filter → Message Filter (per port) → Message Remap → Channel Remap → USB OUT</span>
+  <span><b>Limits:</b> 16 patches · 32 rules per list, 256 per patch · 32 channel rules · 32 triggers · 100-message history</span>
+</footer>
+
+</div>
+
+<script>
+// Draws the panel's button grid and keyboard into #g.
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const g = document.getElementById('g');
+  const el = (tag, a, text) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); if (text != null) e.textContent = text; g.append(e); return e; };
+  const C = { pg: '#4fd1dc', bd: '#ff8a4c', ac: '#6aa5ff', sr: '#b794f6', off: '#4a5256' };
+  const lines = (x, y, arr, cls, fill, dy = 13) => arr.forEach((s, i) => el('text', { class: cls, x, y: y + i * dy, ...(fill ? { style: 'fill:' + fill } : {}) }, s));
+
+  // Encoders and OCT buttons
+  const enc = [[75, 62, 'MASTER', ['click volume'], 'ac'], [185, 62, 'SELECT', ['move focus'], 'ac'],
+               [75, 152, 'PRESETS', ['unused'], 'off'], [185, 152, 'ALGORITHM', ['change value'], 'ac']];
+  enc.forEach(([x, y, n, s, k]) => {
+    el('circle', { class: 'ctl', cx: x, cy: y, r: 19, style: `stroke:${C[k]};stroke-width:${k === 'off' ? 1.5 : 3}` });
+    el('text', { class: 't' + (k === 'off' ? ' off' : ''), x, y: y - 27, style: 'font-size:13px' }, n);
+    lines(x, y + 33, s, 's' + (k === 'off' ? ' off' : ''));
+  });
+  [[48, 'OCT−'], [140, 'OCT+']].forEach(([x, n]) => {
+    el('rect', { class: 'ctl', x, y: 205, width: 74, height: 28, rx: 6, style: `stroke:${C.ac};stroke-width:3` });
+    el('text', { class: 't', x: x + 37, y: 224, style: 'font-size:13px' }, n);
+  });
+  lines(130, 248, ['step ± / scroll / octave'], 's');
+
+  // Screen
+  el('rect', { x: 262, y: 30, width: 196, height: 196, rx: 12, fill: '#0b0d0e', stroke: '#000' });
+  el('image', { href: 'img/screens/midi-monitor.png', x: 272, y: 40, width: 176, height: 176, preserveAspectRatio: 'none' });
+
+  // KNOB 1-4
+  [0, 1, 2, 3].forEach(i => {
+    const x = 534 + i * 120;
+    el('circle', { class: 'ctl', cx: x, cy: 48, r: 15, style: `stroke:${C.ac};stroke-width:3` });
+    el('text', { class: 't', x: x + 22, y: 53, style: 'text-anchor:start;font-size:12.5px' }, 'K' + (i + 1));
+  });
+  el('text', { class: 's', x: 714, y: 82 }, 'KNOB 1–4: send a CC each, from any page (set on EDIT → Knobs Config)');
+
+  // Button grid
+  const rows = [
+    [['FX', ['Filters', 'Remaps'], 'pg'], ['SEL', ['Triggers'], 'pg'], ['ENV', ['→ Builder', 'IN'], 'bd'],
+     ['LFO', ['→ Builder', 'OUT'], 'bd'], ['EDIT', ['Knobs', 'Metronome'], 'pg'], ['GLO', ['Rule', 'Builder'], 'bd']],
+    [['HOME', ['Monitor'], 'pg'], ['SAVE', ['Patches', 'SysEx'], 'pg'], ['ARP', ['Live Keys'], 'pg'],
+     ['SEQ', ['Clock'], 'pg'], ['PLAY', ['open · add', 'load'], 'ac'], ['REC', ['save · del', '(×2)'], 'ac']]];
+  rows.forEach((row, r) => row.forEach(([n, s, k], c) => {
+    const x = 486 + c * 82, y = 96 + r * 70;
+    el('rect', { class: 'ctl', x, y, width: 74, height: 62, rx: 8, style: `stroke:${C[k]};stroke-width:3` });
+    el('text', { class: 't', x: x + 37, y: y + 20, style: 'fill:' + C[k] }, n);
+    lines(x + 37, y + 36, s, 's');
+  }));
+
+  // Keyboard
+  const x0 = 46, kw = 908 / 16, ky = 250;
+  el('rect', { x: x0 - 8, y: ky, width: 924, height: 206, rx: 14, fill: '#1d2123' });
+  const whites = ['F3', 'G3', 'A3', 'B3', 'C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5', 'E5', 'F5', 'G5'];
+  whites.forEach((n, i) => {
+    const x = x0 + i * kw + 3, w = kw - 6, special = i >= 14;
+    el('rect', { class: 'wk', x, y: ky + 110, width: w, height: 76, rx: 9, ...(special ? { style: `fill:#ffe3d3;stroke:${C.bd};stroke-width:3` } : {}) });
+    el('text', { class: 'kn', x: x + w / 2, y: ky + 138, style: 'fill:#1c2226;font-size:15px' }, i + 1);
+    el('text', { class: 'ks', x: x + w / 2, y: ky + 153, style: 'fill:#6b767b' }, n);
+    if (special) el('text', { class: 'kn', x: x + w / 2, y: ky + 175, style: `fill:${C.bd}` }, i === 14 ? 'IN' : 'OUT');
+  });
+  const blacks = [[0, 'OP1', 'port', 'sr'], [1, 'OP2', 'chan', 'sr'], [2, 'OP3', 'type', 'sr'], [4, 'OP4', 'D1', 'sr'], [5, 'OP5', 'D2', 'sr'],
+                  [7, 'F#4', '', 'off'], [8, 'G#4', '', 'off'], [9, 'A#4', '', 'off'],
+                  [11, 'C#5', 'msg rule', 'bd'], [12, 'D#5', 'ch rule', 'bd'], [14, 'F#5', 'trigger', 'bd']];
+  blacks.forEach(([i, n, s, k]) => {
+    const cx = x0 + (i + 1) * kw, off = k === 'off';
+    el('rect', { class: 'bk', x: cx - 24, y: ky + 8, width: 48, height: 72, rx: 9, style: off ? '' : `stroke:${C[k]};stroke-width:3` });
+    el('text', { class: 'kn', x: cx, y: ky + 42, style: `fill:${off ? '#6b767b' : C[k]}` }, n);
+    if (s) el('text', { class: 'ks', x: cx, y: ky + 60, style: 'fill:#d5dde1' }, s);
+  });
+  // Group captions
+  const cap = (x1, x2, y, t, col) => {
+    el('path', { d: `M${x1} ${y - 6} L${x1} ${y} L${x2} ${y} L${x2} ${y - 6}`, fill: 'none', stroke: col, 'stroke-width': 1.5 });
+    el('text', { class: 's', x: (x1 + x2) / 2, y: y + 13, style: `fill:${col};font-weight:700` }, t);
+  };
+  cap(x0 + kw - 20, x0 + 6 * kw + 20, ky + 88, 'MONITOR SEARCH · tap on/off · hold for settings', C.sr);
+  cap(x0 + 12 * kw - 20, x0 + 15 * kw + 20, ky + 88, 'MONITOR SHORTCUTS', C.bd);
+  el('text', { class: 's', x: x0 + 7 * kw, y: ky + 199, style: 'fill:#d5dde1;font-weight:600' }, 'White keys: MIDI channels 1–16 on most pages · ARP Live Keys: all 27 keys play notes');
+})();
+</script>
+</body>
+</html>
